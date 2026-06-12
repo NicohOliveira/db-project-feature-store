@@ -74,5 +74,23 @@ Para cumprir o requisito de consultas SQL avançadas, o painel administrativo co
 4. **Tabela de Linhagem (Histórico de Versões):**
    * **Objetivo:** Exibir a árvore genealógica de um arquivo (ex: v3.0 veio da v2.0 que veio da v1.0).
 
+## Especificação de Regras de Negócio (Restrições do Sistema)
+
+* **Indexação de Maturidade por Auto-Declaração:** O middleware delega o polimento dos dados do CSV para ferramentas externas de engenharia, mas atua como um indexador rigoroso de qualidade através de níveis auto-declarados pelo usuário no formulário de upload:
+    * **BRONZE (Bruto):** Carga inicial. Aceita dados em estado bruto (com nulos ou inconsistências), focando no registro original da captura.
+    * **PRATA (Tratado):** Versões que passaram por limpeza, tratamento de tipos ou imputação de valores ausentes.
+    * **OURO (Otimizado):** Versões consolidadas, com features validadas e prontas para consumo direto por pipelines de Machine Learning.
+* **Mecanismo de Linhagem Transparente (UI Context):** O preenchimento das colunas `id_dataset_base` e `num_versao_base` é obrigatório para manter a integridade referencial do auto-relacionamento. Contudo, essa amarração é invisível para o usuário: o sistema captura o ID da versão que está sendo visualizada na tela no momento do clique em "Nova Versão" e injeta a herança automaticamente no backend.
+* **Colaboração Aberta e Governança por Rastreabilidade:** O sistema adota um modelo descentralizado de contribuição (similar ao ecossistema Git). Usuários possuem permissão para submeter novas versões derivadas (v2, v3) em repositórios lógicos criados por terceiros. A governança da plataforma não se baseia no bloqueio de escrita, mas na auditoria estrita: o banco vincula o `username_autor` a cada modificação, permitindo a responsabilização técnica por eventuais inconsistências na linhagem.
+## Fluxo de Funcionalidades (Ciclo de Vida do Dado)
+1. **Autenticação e Auto-Cadastro:** O usuário acessa a plataforma e, caso não possua credenciais, pode realizar o auto-cadastro instantâneo para obter acesso ao Dashboard analítico.
+2. **Ingestão Base (Nível Bronze):** Na página de criação, o usuário realiza o upload do primeiro arquivo CSV. O sistema captura o contexto logado, infere a versão como `1` e exige a marcação de maturidade inicial e o registro de ao menos uma fonte de origem.
+3. **Navegação e Descoberta:** Usuários navegam pelo catálogo e acessam os detalhes de qualquer dataset disponível na rede interna. O frontend carrega a árvore de versões de forma dinâmica.
+4. **Consumo Auditado:** Ao disparar o download de uma versão específica, a camada de persistência intercepta a requisição e grava um log atômico contendo o carimbo de tempo e o autor do consumo, alimentando os relatórios.
+5. **Evolução Colaborativa (Linhagem Automática):** A partir da tela de detalhes de uma versão existente, qualquer usuário pode clicar em "Submeter Nova Versão". O frontend infere automaticamente qual é a versão-pai baseando-se no nó atual de navegação, eliminando a necessidade de inserção manual de IDs pelo desenvolvedor.
+## Decisões de Design e Simplificação de Escopo
+
+* **Ausência de RBAC (Controle de Acesso Baseado em Papéis):** Para manter o desenvolvimento focado nas restrições relacionais e viável dentro do cronograma da disciplina, optou-se por não implementar hierarquias complexas de usuários (como perfis de 'Líder de Grupo' ou 'Administrador Geral'). A segurança da plataforma apoia-se no pilar da **rastreabilidade total**, onde cada ação gera um registro imutável associado a uma chave estrangeira de usuário.
+* **Módulo de Cadastro Aberto para Fins Avaliativos:** Em um ambiente de produção real, a tabela `Usuario` seria integrada de forma fechada a um serviço de federação de identidades corporativo (SSO/LDAP). Para a validação acadêmica e facilidade de testes por parte da banca avaliadora, a interface mantém a funcionalidade de auto-cadastro aberta, permitindo a criação dinâmica de perfis de teste diretamente pela aplicação web.
 ---
 *Este projeto é parte das entregas avaliativas do 1º e 2º bimestres da disciplina.*
