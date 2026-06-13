@@ -1,11 +1,13 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+
 
 function Login() {
     const [username, setUsername] = useState("");
     const [senha, setSenha] = useState("");
     const [mensagem, setMensagem] = useState("");
     const [erro, setErro] = useState(false);
+    const navigate = useNavigate();
 
     const handleSubmitLogin = async (e) => {
         e.preventDefault();
@@ -28,6 +30,7 @@ function Login() {
                 setMensagem(data.mensagem);
                 setUsername("");
                 setSenha("");
+                navigate("/dashboard");
             } else {
                 setErro(true);
                 setMensagem(data.mensagem);

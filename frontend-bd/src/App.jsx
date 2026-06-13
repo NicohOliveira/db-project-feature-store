@@ -1,7 +1,7 @@
 import CadastroUsuario from "./pages/CadastroUsuario";
-import Login from "./pages/LoginUsuario";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import LoginUsuario from "./pages/LoginUsuario.jsx";
+import Dashboard from "./pages/Dashboard";
 
 function App() {
   return (
@@ -9,6 +9,7 @@ function App() {
           <Routes>
               <Route path="/" element={<LoginUsuario />} />
               <Route path="/cadastro" element={<CadastroUsuario />} />
+              <Route path="/dashboard" element={<Dashboard />} />
               <Route path="*" element={<Navigate to="/" />} />
           </Routes>
       </BrowserRouter>
