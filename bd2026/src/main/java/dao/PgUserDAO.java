@@ -23,47 +23,32 @@ public class PgUserDAO implements UserDAO {
     private final Connection connection;
 
     private static final String AUTHENTICATE_QUERY =
-                                "SELECT id, nome, nascimento, avatar " +
-                                "FROM j2ee.user " +
-                                "WHERE login = ? AND senha = md5(?);";
+                                "SELECT username " +
+                                "FROM usuario " +
+                                "WHERE username = ? AND senha = md5(?);";
     
     private static final String CREATE_QUERY =
-                                "INSERT INTO j2ee.user(login, senha, nome, nascimento, avatar) " +
-                                "VALUES(?, md5(?), ?, ?, ?);";
+                                "INSERT INTO Usuario(username, senha) " +
+                                "VALUES(?, md5(?));";
     
     private static final String ALL_QUERY =
-                                "SELECT id, login " +
-                                "FROM j2ee.user " +
-                                "ORDER BY id;";    
+                                "SELECT username " +
+                                "FROM Usuariou " +
+                                "ORDER BY username;";
 
     private static final String READ_QUERY =
-                                "SELECT login, nome, nascimento, avatar " +
-                                "FROM j2ee.user " +
-                                "WHERE id = ?;";          
+                                "SELECT username " +
+                                "FROM Usuario " +
+                                "WHERE username = ?;";
 
     private static final String UPDATE_QUERY =
-                                "UPDATE j2ee.user " +
-                                "SET login = ?, nome = ?, nascimento = ? " +
-                                "WHERE id = ?;";
-
-    private static final String UPDATE_WITH_AVATAR_QUERY =
-                                "UPDATE j2ee.user " +
-                                "SET login = ?, nome = ?, nascimento = ?, avatar = ? " +
-                                "WHERE id = ?;";
-    
-    private static final String UPDATE_WITH_PASSWORD_QUERY =
-                                "UPDATE j2ee.user " +
-                                "SET login = ?, nome = ?, nascimento = ?, senha = md5(?) " +
-                                "WHERE id = ?;";
-
-    private static final String UPDATE_WITH_AVATAR_AND_PASSWORD_QUERY =
-                                "UPDATE j2ee.user " +
-                                "SET login = ?, nome = ?, nascimento = ?, avatar = ?, senha = md5(?) " +
-                                "WHERE id = ?;";
+                                "UPDATE Usuario " +
+                                "SET senha = md5(?) " +
+                                "WHERE username = ?;";
 
     private static final String DELETE_QUERY =
-                                "DELETE FROM j2ee.user " +
-                                "WHERE id = ?;";
+                                "DELETE FROM Usuario " +
+                                "WHERE username = ?;";
     
     public PgUserDAO(Connection connection) {
         this.connection = connection;
@@ -77,10 +62,7 @@ public class PgUserDAO implements UserDAO {
 
             try (ResultSet result = statement.executeQuery()) {
                 if (result.next()) {
-                    user.setId(result.getInt("id"));
-                    user.setNome(result.getString("nome"));
-                    user.setNascimento(result.getDate("nascimento"));
-                    user.setAvatar(result.getString("avatar"));
+                    user.setNome(result.getString("username"));
                 } else {
                     throw new SecurityException("Login ou senha incorretos.");
                 }
@@ -91,27 +73,24 @@ public class PgUserDAO implements UserDAO {
             throw new SQLException("Erro ao autenticar usuário.");
         }                
     }
-
     @Override
     public User getByLogin(String login) throws SQLException {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
+    }/* nao sei q fazer com isso por enquanto entao deixarei pro java nao chorar*/
 
     @Override
     public void create(User user) throws SQLException {
         try (PreparedStatement statement = connection.prepareStatement(CREATE_QUERY)) {
             statement.setString(1, user.getLogin());
             statement.setString(2, user.getSenha());
-            statement.setString(3, user.getNome());
-            statement.setDate(4, user.getNascimento());
-            statement.setString(5, user.getAvatar());
 
             statement.executeUpdate();
         } catch (SQLException ex) {
             Logger.getLogger(PgUserDAO.class.getName()).log(Level.SEVERE, "DAO", ex);
 
-            if (ex.getMessage().contains("uq_user_login")) {
-                throw new SQLException("Erro ao inserir usuário: login já existente.");
+            if (ex.getMessage().contains("Usuario_pkey")) /*no original tinha uq_user_login, acredito q seja pra garantir nome
+            unique, mas como  nao precisamos vou mudar direto pra pk*/{
+                throw new SQLException("Erro ao inserir usuario: login já existente.");
             } else if (ex.getMessage().contains("not-null")) {
                 throw new SQLException("Erro ao inserir usuário: pelo menos um campo está em branco.");
             } else {
@@ -121,18 +100,14 @@ public class PgUserDAO implements UserDAO {
     }
 
     @Override
-    public User read(Integer id) throws SQLException {
+    public User read(String username) throws SQLException {
         User user = new User();
 
         try (PreparedStatement statement = connection.prepareStatement(READ_QUERY)) {
-            statement.setInt(1, id);
+            statement.setString(1, username);
             try (ResultSet result = statement.executeQuery()) {
                 if (result.next()) {
-                    user.setId(id);
-                    user.setLogin(result.getString("login"));
-                    user.setNome(result.getString("nome"));
-                    user.setNascimento(result.getDate("nascimento"));
-                    user.setAvatar(result.getString("avatar"));
+                    user.setLogin(username);
                 } else {
                     throw new SQLException("Erro ao visualizar: usuário não encontrado.");
                 }
@@ -148,13 +123,17 @@ public class PgUserDAO implements UserDAO {
         }
 
         return user;
+
     }
 
     @Override
     public void update(User user) throws SQLException {
-        String query;
+        //String query;
 
-        if ((user.getSenha() == null) || (user.getSenha().isBlank())) {
+        // vou tirar os ifs ja que so temos usuario e senha e ver se não capota, por enquanto só comentar
+
+
+        /*if ((user.getSenha() == null) || (user.getSenha().isBlank())) {
             if ((user.getAvatar() == null) || (user.getAvatar().isBlank()))
                 query = UPDATE_QUERY;
             else
@@ -164,11 +143,11 @@ public class PgUserDAO implements UserDAO {
                 query = UPDATE_WITH_PASSWORD_QUERY;
             else
                 query = UPDATE_WITH_AVATAR_AND_PASSWORD_QUERY;
-        }
+        }*/
 
-        try (PreparedStatement statement = connection.prepareStatement(query)) {
-            statement.setString(1, user.getLogin());
-            statement.setString(2, user.getNome());
+        try (PreparedStatement statement = connection.prepareStatement(UPDATE_QUERY)) {
+            /*statement.setString(1, user.getSenha());
+            statement.setString(2, user.getLogin());
             statement.setDate(3, user.getNascimento());
 
             if ((user.getSenha() == null) || (user.getSenha().isBlank())) {
@@ -204,25 +183,30 @@ public class PgUserDAO implements UserDAO {
             } else {
                 throw new SQLException("Erro ao editar usuário.");
             }
+            throw new SQLException("Erro ao editar a senha do usuário.");*/
+            statement.setString(1, user.getSenha());
+            statement.setString(2, user.getLogin());
+
+            if (statement.executeUpdate() < 1) {
+                throw new SQLException("Erro ao editar: usuário não encontrado.");
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(PgUserDAO.class.getName()).log(Level.SEVERE, "DAO", ex);
+            throw new SQLException("Erro ao editar a senha do usuário.");
         }        
     }
 
     @Override
-    public void delete(Integer id) throws SQLException {
+    public void delete(String username) throws SQLException {
         try (PreparedStatement statement = connection.prepareStatement(DELETE_QUERY)) {
-            statement.setInt(1, id);
+            statement.setString(1, username);
 
             if (statement.executeUpdate() < 1) {
                 throw new SQLException("Erro ao excluir: usuário não encontrado.");
             }
         } catch (SQLException ex) {
             Logger.getLogger(PgUserDAO.class.getName()).log(Level.SEVERE, "DAO", ex);
-
-            if (ex.getMessage().equals("Erro ao excluir: usuário não encontrado.")) {
-                throw ex;
-            } else {
                 throw new SQLException("Erro ao excluir usuário.");
-            }
         }
     }
 
@@ -234,9 +218,7 @@ public class PgUserDAO implements UserDAO {
              ResultSet result = statement.executeQuery()) {
             while (result.next()) {
                 User user = new User();
-                user.setId(result.getInt("id"));
-                user.setLogin(result.getString("login"));
-
+                user.setLogin(result.getString("username"));
                 userList.add(user);
             }
         } catch (SQLException ex) {
