@@ -8,8 +8,13 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import dao.DAO;
 import dao.DAOFactory;
+import dao.PgUserDAO;
+import dao.UserDAO;
+import jdbc.PgConnectionFactory;
+
 import java.io.File;
 import java.io.IOException;
+import java.sql.Connection;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.text.ParseException;
@@ -26,6 +31,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import model.User;
+
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
@@ -155,14 +161,41 @@ public class UserController extends HttpServlet {
             throws ServletException, IOException {
 
         DAO<User> dao;
-        User user = new User();
+        User user = new User(null, null);
         HttpSession session = request.getSession();
 
         String servletPath = request.getServletPath();
 
         switch (request.getServletPath()) {
+            case "/user/create": {
+                response.setContentType("application/json");
+                response.setCharacterEncoding("UTF-8");
 
-            case "/user/create":
+                try {
+                    String username = request.getParameter("username");
+                    String senha = request.getParameter("senha");
+
+                    User usuario = new User(username, senha);
+
+                    PgConnectionFactory factory = new PgConnectionFactory();
+                    Connection conn = factory.getConnection();
+                    PgUserDAO usuarioDao = new PgUserDAO(conn);
+                    usuarioDao.create(usuario);
+
+                    response.setStatus(HttpServletResponse.SC_OK);
+                    response.getWriter().write("{\"status\": \"ok\", \"mensagem\": \"Usuário cadastrado com sucesso!\"}");
+
+                } catch (Exception e) {
+                    response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                    
+                    if (e.getMessage() != null && e.getMessage().contains("duplicate key")) {
+                        response.getWriter().write("{\"status\": \"erro\", \"mensagem\": \"Nome de usuário já existe.\"}");
+                    } else {
+                        response.getWriter().write("{\"status\": \"erro\", \"mensagem\": \"" + e.getMessage() + "\"}");
+                    }
+                }
+                break;
+            }
             case "/user/update": {
                 // Se fosse um form simples, usaria request.getParameter()
                 // String login = request.getParameter("login");
@@ -195,20 +228,20 @@ public class UserController extends HttpServlet {
 
                             switch (fieldName) {
                                 case "login":
-                                    user.setLogin(fieldValue);
+                                    user.setUsername(fieldValue);
                                     break;
                                 case "senha":
                                     user.setSenha(fieldValue);
                                     break;
                                 case "nome":
-                                    user.setNome(fieldValue);
+                                    user.setUsername(fieldValue);
                                     break;
-                                case "nascimento":
-                                    java.util.Date dataNascimento = new SimpleDateFormat("yyyy-MM-dd").parse(fieldValue);
-                                    user.setNascimento(new Date(dataNascimento.getTime()));
-                                    break;
-                                case "id":
-                                    user.setId(Integer.valueOf(fieldValue));
+                                // case "nascimento":
+                                //     java.util.Date dataNascimento = new SimpleDateFormat("yyyy-MM-dd").parse(fieldValue);
+                                //     user.setNascimento(new Date(dataNascimento.getTime()));
+                                //     break;
+                                // case "id":
+                                //     user.setId(Integer.valueOf(fieldValue));
                             }
                         } else {
                             String fieldName = item.getFieldName();
@@ -226,7 +259,7 @@ public class UserController extends HttpServlet {
                                 File uploadedFile = new File(savePath);
                                 item.write(uploadedFile);
 
-                                user.setAvatar(fileName);
+                                // user.setAvatar(fileName);
                             }
                         }
                     }
@@ -236,7 +269,7 @@ public class UserController extends HttpServlet {
                     if (servletPath.equals("/user/create")) {
                         dao.create(user);
                     } else {
-                        servletPath += "?id=" + String.valueOf(user.getId());
+                        // servletPath += "?id=" + String.valueOf(user.getId());
                         dao.update(user);
                     }
 

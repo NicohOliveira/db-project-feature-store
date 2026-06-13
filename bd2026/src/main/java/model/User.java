@@ -1,70 +1,27 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package model;
 
-import java.sql.Date;
-
-/**
- *
- * @author dskaster
- */
 public class User {
-
-    private Integer id;
-    private String login;
+    private String username;
     private String senha;
-    private String nome;
-    private Date nascimento;
-    private String avatar;    
 
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public String getLogin() {
-        return login;
-    }
-
-    public void setLogin(String login) {
-        this.login = login;
-    }
-
-    public String getSenha() {
-        return senha;
-    }
-
-    public void setSenha(String senha) {
+    public User(String username, String senha){
+        this.username = username;
         this.senha = senha;
     }
 
-    public String getNome() {
-        return nome;
+    // Set
+    public void setUsername(String username){
+        this.username = username;
+    }
+    public void setSenha(String senha){
+        this.senha = senha;
     }
 
-    public void setNome(String nome) {
-        this.nome = nome;
+    // Get
+    public String getUsername(){
+        return username;
     }
-
-    public Date getNascimento() {
-        return nascimento;
+    public String getSenha(){
+        return senha;
     }
-
-    public void setNascimento(Date nascimento) {
-        this.nascimento = nascimento;
-    }
-
-    public String getAvatar() {
-        return avatar;
-    }
-
-    public void setAvatar(String avatar) {
-        this.avatar = avatar;
-    }
-    
 }

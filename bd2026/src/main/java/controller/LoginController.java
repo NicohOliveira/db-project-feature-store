@@ -85,12 +85,12 @@ public class LoginController extends HttpServlet {
             throws ServletException, IOException {
 
         UserDAO dao;
-        User user = new User();
+        User user = new User(null, null);
         HttpSession session = request.getSession();
 
         switch (request.getServletPath()) {
             case "/login":
-                user.setLogin(request.getParameter("login"));
+                user.setUsername(request.getParameter("login"));
                 user.setSenha(request.getParameter("senha"));
 
                 try (DAOFactory daoFactory = DAOFactory.getInstance()) {
