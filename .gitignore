@@ -27,3 +27,6 @@ replay_pid*
 .idea/
 .smarttomcat/
 bd2026/target/
+
+frontend-bd/node_modules/
+frontend-bd/dist/
