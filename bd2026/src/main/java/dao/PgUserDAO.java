@@ -26,9 +26,9 @@ public class PgUserDAO implements UserDAO {
     private final Connection connection;
 
     private static final String AUTHENTICATE_QUERY =
-                                "SELECT username " +
+                                "SELECT username, senha " +
                                 "FROM usuario " +
-                                "WHERE username = ? AND senha = ?;";
+                                "WHERE username = ?;";
     
     private static final String CREATE_QUERY =
                                 "INSERT INTO Usuario(username, senha) " +
@@ -46,7 +46,7 @@ public class PgUserDAO implements UserDAO {
 
     private static final String UPDATE_QUERY =
                                 "UPDATE Usuario " +
-                                "SET senha = md5(?) " +
+                                "SET senha = ? " +
                                 "WHERE username = ?;";
 
     private static final String DELETE_QUERY =
@@ -61,11 +61,14 @@ public class PgUserDAO implements UserDAO {
     public void authenticate(User user) throws SQLException, SecurityException {
         try (PreparedStatement statement = connection.prepareStatement(AUTHENTICATE_QUERY)) {
             statement.setString(1, user.getUsername());
-            statement.setString(2, user.getSenha());
+            /*statement.setString(2, user.getSenha());*/
 
             try (ResultSet result = statement.executeQuery()) {
                 if (result.next()) {
-                    user.setUsername(result.getString("username"));
+                    String senhaHashBanco = result.getString("senha");
+                    if (BCrypt.checkpw(user.getSenha(), senhaHashBanco)){
+                        user.setUsername(result.getString("username"));
+                    } else{throw new SecurityException("Login ou senha incorretos.");}
                 } else {
                     throw new SecurityException("Login ou senha incorretos.");
                 }
@@ -132,63 +135,11 @@ public class PgUserDAO implements UserDAO {
 
     @Override
     public void update(User user) throws SQLException {
-        //String query;
-
-        // vou tirar os ifs ja que so temos usuario e senha e ver se não capota, por enquanto só comentar
-
-
-        /*if ((user.getSenha() == null) || (user.getSenha().isBlank())) {
-            if ((user.getAvatar() == null) || (user.getAvatar().isBlank()))
-                query = UPDATE_QUERY;
-            else
-                query = UPDATE_WITH_AVATAR_QUERY;
-        } else {
-            if ((user.getAvatar() == null) || (user.getAvatar().isBlank()))
-                query = UPDATE_WITH_PASSWORD_QUERY;
-            else
-                query = UPDATE_WITH_AVATAR_AND_PASSWORD_QUERY;
-        }*/
-
         try (PreparedStatement statement = connection.prepareStatement(UPDATE_QUERY)) {
-            /*statement.setString(1, user.getSenha());
-            statement.setString(2, user.getLogin());
-            statement.setDate(3, user.getNascimento());
+            // update tava feio cheio de comentario, adaptei ja pro bcrypt pra aproveitar e limpar
+            String senhaHash = BCrypt.hashpw(user.getSenha(), BCrypt.gensalt());
 
-            if ((user.getSenha() == null) || (user.getSenha().isBlank())) {
-                if ((user.getAvatar() == null) || (user.getAvatar().isBlank())) {
-                    statement.setInt(4, user.getId());
-                } else {
-                    statement.setString(4, user.getAvatar());
-                    statement.setInt(5, user.getId());
-                }
-            } else {
-                if ((user.getAvatar() == null) || (user.getAvatar().isBlank())) {
-                    statement.setString(4, user.getSenha());
-                    statement.setInt(5, user.getId());
-                } else {
-                    statement.setString(4, user.getAvatar());
-                    statement.setString(5, user.getSenha());
-                    statement.setInt(6, user.getId());
-                }
-            }
-
-            if (statement.executeUpdate() < 1) {
-                throw new SQLException("Erro ao editar: usuário não encontrado.");
-            }
-        } catch (SQLException ex) {
-            Logger.getLogger(PgUserDAO.class.getName()).log(Level.SEVERE, "DAO", ex);
-
-            if (ex.getMessage().equals("Erro ao editar: usuário não encontrado.")) {
-                throw ex;
-            } else if (ex.getMessage().contains("uq_user_login")) {
-                throw new SQLException("Erro ao editar usuário: login já existente.");
-            } else if (ex.getMessage().contains("not-null")) {
-                throw new SQLException("Erro ao editar usuário: pelo menos um campo está em branco.");
-            } else {
-                throw new SQLException("Erro ao editar usuário.");
-            }
-            throw new SQLException("Erro ao editar a senha do usuário.");*/
-            statement.setString(1, user.getSenha());
+            statement.setString(1, senhaHash);
             statement.setString(2, user.getUsername());
 
             if (statement.executeUpdate() < 1) {
@@ -197,7 +148,7 @@ public class PgUserDAO implements UserDAO {
         } catch (SQLException ex) {
             Logger.getLogger(PgUserDAO.class.getName()).log(Level.SEVERE, "DAO", ex);
             throw new SQLException("Erro ao editar a senha do usuário.");
-        }        
+        }
     }
 
     @Override

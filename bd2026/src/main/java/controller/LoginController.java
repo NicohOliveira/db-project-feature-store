@@ -90,20 +90,23 @@ public class LoginController extends HttpServlet {
 
         switch (request.getServletPath()) {
             case "/login":
-                user.setUsername(request.getParameter("login"));
+                response.setContentType("application/json");
+                response.setCharacterEncoding("UTF-8"); //resposta da rrquisição será em json
+
+                user.setUsername(request.getParameter("username")); //mudei pra username pra manter o padrao
                 user.setSenha(request.getParameter("senha"));
 
                 try (DAOFactory daoFactory = DAOFactory.getInstance()) {
                     dao = daoFactory.getUserDAO();
-
                     dao.authenticate(user);
-
                     session.setAttribute("usuario", user);
-                } catch (ClassNotFoundException | IOException | SQLException | SecurityException ex) {
-                    session.setAttribute("error", ex.getMessage());
-                }
 
-                response.sendRedirect(request.getContextPath() + "/");
+                    response.setStatus(HttpServletResponse.SC_OK); //aqui só adicionei pra retornar sucesso em json
+                    response.getWriter().write("{\"status\": \"ok\", \"mensagem\": \"Login realizado com sucesso!\"}");
+                } catch (Exception ex ) {
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.getWriter().write("{\"status\": \"erro\", \"mensagem\": \"Usuário ou senha incorretos.\"}");
+                }
         }                        
     }
 
