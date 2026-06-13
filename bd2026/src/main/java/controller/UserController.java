@@ -35,24 +35,24 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
  *
  * @author dskaster
  */
-@WebServlet(name = "UserController", 
+@WebServlet(name = "UserController",
         urlPatterns = {
-            "/user",
-            "/user/create",
-            "/user/update",
-            "/user/delete",
-            "/user/read"
+                "/user",
+                "/user/create",
+                "/user/update",
+                "/user/delete",
+                "/user/read"
         })
 public class UserController extends HttpServlet {
-    
+
     private static final int MAX_FILE_SIZE = 1024 * 1024 * 4;
-    
+
     /**
      * Pasta para salvar os arquivos que foram 'upados'. Os arquivos vão ser
      * salvos na pasta de build do servidor. Ao limpar o projeto (clean),
      * pode-se perder estes arquivos. Façam backup antes de limpar.
      */
-    private static final String SAVE_DIR = "img";    
+    private static final String SAVE_DIR = "img";
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**
@@ -86,18 +86,18 @@ public class UserController extends HttpServlet {
                 dispatcher.forward(request, response);
                 break;
             }
-                       
+
             case "/user/create": {
                 dispatcher = request.getRequestDispatcher("/view/user/create.jsp");
                 dispatcher.forward(request, response);
                 break;
             }
-            
+
             case "/user/update": {
                 try (DAOFactory daoFactory = DAOFactory.getInstance()) {
                     dao = daoFactory.getUserDAO();
 
-                    user = dao.read(Integer.valueOf(request.getParameter("id")));
+                    user = dao.read(request.getParameter("id"));
                     request.setAttribute("user", user);
 
                     dispatcher = request.getRequestDispatcher("/view/user/update.jsp");
@@ -108,24 +108,24 @@ public class UserController extends HttpServlet {
                 }
                 break;
             }
-            
+
             case "/user/delete": {
                 try (DAOFactory daoFactory = DAOFactory.getInstance()) {
                     dao = daoFactory.getUserDAO();
-                    dao.delete(Integer.valueOf(request.getParameter("id")));
+                    dao.delete(request.getParameter("id"));
                 } catch (ClassNotFoundException | IOException | SQLException ex) {
                     request.getSession().setAttribute("error", ex.getMessage());
                 }
 
                 response.sendRedirect(request.getContextPath() + "/user");
                 break;
-            }            
+            }
 
             case "/user/read": {
                 try (DAOFactory daoFactory = DAOFactory.getInstance()) {
                     dao = daoFactory.getUserDAO();
 
-                    user = dao.read(Integer.valueOf(request.getParameter("id")));
+                    user = dao.read(request.getParameter("id"));
 
                     Gson gson = new GsonBuilder().setDateFormat("dd/MM/yyyy").create();
                     String json = gson.toJson(user);
@@ -136,10 +136,10 @@ public class UserController extends HttpServlet {
                     response.sendRedirect(request.getContextPath() + "/user");
                 }
                 break;
-            }            
-            
+            }
+
         }
-        
+
     }
 
     /**
@@ -158,8 +158,8 @@ public class UserController extends HttpServlet {
         User user = new User();
         HttpSession session = request.getSession();
 
-        String servletPath = request.getServletPath();        
-        
+        String servletPath = request.getServletPath();
+
         switch (request.getServletPath()) {
 
             case "/user/create":
@@ -261,7 +261,7 @@ public class UserController extends HttpServlet {
                 }
                 break;
             }
-            
+
             case "/user/delete": {
                 String[] users = request.getParameterValues("delete");
 
@@ -272,7 +272,7 @@ public class UserController extends HttpServlet {
                         daoFactory.beginTransaction();
 
                         for (String userId : users) {
-                            dao.delete(Integer.valueOf(userId));
+                            dao.delete(userId);
                         }
 
                         daoFactory.commitTransaction();
@@ -292,9 +292,9 @@ public class UserController extends HttpServlet {
                 response.sendRedirect(request.getContextPath() + "/user");
                 break;
             }
-            
+
         }
-        
+
     }
 
     /**
