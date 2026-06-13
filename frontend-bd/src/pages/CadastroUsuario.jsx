@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 function CadastroUsuario() {
     const [username, setUsername] = useState("");
@@ -67,9 +68,13 @@ function CadastroUsuario() {
             </div>
             <button type="submit">Cadastrar</button>
         </form>
+            <div className="mt-3">
+                <p>Já tem uma conta? <Link to="/">Faça login</Link></p>
+            </div>
 
         {mensagem && (<p>{mensagem}</p>)}
         </div>
+
     );
 }
 
