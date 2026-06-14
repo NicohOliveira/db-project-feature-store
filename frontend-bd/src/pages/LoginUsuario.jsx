@@ -26,6 +26,7 @@ function Login() {
             const data = await response.json();
 
             if (data.status === "ok") {
+                localStorage.setItem("username", username);
                 setErro(false);
                 setMensagem(data.mensagem);
                 setUsername("");
