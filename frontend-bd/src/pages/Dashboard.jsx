@@ -1,13 +1,22 @@
 import { useNavigate, Link } from "react-router-dom";
+import { useState, useEffect } from "react";
 
 function Dashboard() {
     const navigate = useNavigate();
     const usuarioLogado = localStorage.getItem("username");
 
+    const [datasets, setDatasets] = useState([]);
+
     const handleLogout = () => {
         localStorage.removeItem("username");
         navigate("/");
     };
+
+    useEffect(() => {
+        fetch("http://localhost:8080/bd2026/dataset")
+            .then(res => res.json())
+            .then(data => setDatasets(data));
+    }, []);
 
     return (
         <div className="d-flex vh-100 bg-light">
@@ -59,8 +68,28 @@ function Dashboard() {
 
                 <div className="card shadow-sm border-0">
                     <div className="card-body text-center text-muted py-5">
-                        <p className="fs-5 mb-1">Nenhum dataset cadastrado ainda.</p>
-                        <em>(aguardando a API dos dataset ficar pronta... ;))</em>
+                        <table className="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Criador</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {datasets.length === 0 ? (
+                                    <tr>
+                                        <td colSpan="2">Nenhum dataset cadastrado ainda.</td>
+                                    </tr>
+                                ) : (
+                                    datasets.map(d => (
+                                        <tr key={d.id}>
+                                            <td>{d.nome}</td>
+                                            <td>{d.username_criador}</td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
