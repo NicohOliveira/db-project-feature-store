@@ -1,0 +1,52 @@
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+
+function CadastroDataset() {
+    const [nome, setNome] = useState("");
+    const navigate = useNavigate();
+
+    const handleSalvar = (e) => {
+        e.preventDefault();
+
+        console.log("Dados prontos para enviar:", { nome });
+        alert("interface pronta so falta eu fazer a integração com back depois");
+
+        navigate("/dashboard");
+    };
+
+    return (
+        <div className="d-flex vh-100 bg-light justify-content-center align-items-center">
+            <div className="card shadow p-4 border-0" style={{ width: "100%", maxWidth: "600px" }}>
+                <div className="d-flex justify-content-between align-items-center mb-4">
+                    <h3 className="mb-0">Novo Dataset</h3>
+                    <Link to="/dashboard" className="btn btn-outline-secondary btn-sm">
+                        Voltar
+                    </Link>
+                </div>
+
+                <form onSubmit={handleSalvar}>
+                    <div className="mb-4">
+                        <label className="form-label fw-bold">Nome do Dataset</label>
+                        <input
+                            type="text"
+                            className="form-control"
+                            value={nome}
+                            onChange={(e) => setNome(e.target.value)}
+                            placeholder="Ex: dados_climaticos_2026"
+                            required
+                        />
+                        <small className="form-text text-muted">
+                            a primeira versão (bronze) será inserida depois
+                        </small>
+                    </div>
+
+                    <button type="submit" className="btn btn-success w-100 fw-bold fs-5 py-2">
+                        Criar Repositório
+                    </button>
+                </form>
+            </div>
+        </div>
+    );
+}
+
+export default CadastroDataset;

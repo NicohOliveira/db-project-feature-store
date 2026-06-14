@@ -32,12 +32,12 @@ function Dashboard() {
                 <ul className="nav nav-pills flex-column mb-auto mt-2">
                     <li className="nav-item mb-2">
                         <Link to="/dashboard" className="nav-link active" aria-current="page">
-                            📊 Meus Datasets
+                            Meus Datasets
                         </Link>
                     </li>
                     <li className="nav-item">
                         <Link to="#" className="nav-link text-white">
-                            ⚙️ Configurações
+                            Configurações
                         </Link>
                     </li>
                 </ul>
@@ -45,7 +45,7 @@ function Dashboard() {
                 <hr />
 
                 <button className="btn btn-outline-danger w-100 mt-2 fw-bold" onClick={handleLogout}>
-                    🚪 Sair
+                    Sair
                 </button>
             </div>
 
