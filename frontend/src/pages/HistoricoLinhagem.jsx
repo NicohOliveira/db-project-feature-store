@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
-function HistoricoLinhagem() {
-    const { id } = useParams();
+function HistoricoLinhagem({ id }) {
     const [versoes, setVersoes] = useState([]);
     const [carregando, setCarregando] = useState(true);
     const [erro, setErro] = useState(null);
@@ -59,7 +58,7 @@ function HistoricoLinhagem() {
     if (versoes.length === 0) return <div className="container mt-5 alert alert-warning bg-dark text-warning border-warning">Nenhuma versão encontrada para este repositório.</div>;
 
     return (
-        <div className="container-fluid py-4 bg-dark text-light" style={{ minHeight: "100vh" }}>
+       <div className="text-light" style={{ width: "100%" }}>
             <div className="container">
                 <h3 className="fw-bold text-white mb-1">Histórico de Versões</h3>
                 <p className="text-secondary mb-4">Acompanhe as modificações do dataset em ordem cronológica.</p>

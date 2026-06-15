@@ -5,7 +5,6 @@ import Dashboard from "./pages/Dashboard";
 import DetalhesDataset from "./pages/DetalhesDataset.jsx";
 import CadastroDataset from "./pages/CadastroDataset.jsx";
 import EditarDataset from "./pages/EditarDataset.jsx";
-import HistoricoLinhagem from "./pages/HistoricoLinhagem.jsx";
 
 function App() {
   return (
@@ -17,7 +16,6 @@ function App() {
               <Route path="/cadastro-dataset" element={<CadastroDataset/>} />
               <Route path="/dataset/editar/:id" element={<EditarDataset />} />
               <Route path="/dataset/:id" element={<DetalhesDataset />} />
-              <Route path="/ver-versoes/:id" element={<HistoricoLinhagem />} />
               <Route path="*" element={<Navigate to="/" />} />
           </Routes>
       </BrowserRouter>
