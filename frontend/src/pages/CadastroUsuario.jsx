@@ -1,14 +1,13 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
-function Login() {
+function CadastroUsuario() {
     const [username, setUsername] = useState("");
     const [senha, setSenha] = useState("");
     const [mensagem, setMensagem] = useState("");
     const [erro, setErro] = useState(false);
-    const navigate = useNavigate();
 
-    const handleSubmitLogin = async (e) => {
+    const handleSubmitCadastro = async (e) => {
         e.preventDefault();
         setMensagem("");
 
@@ -16,24 +15,26 @@ function Login() {
         params.append("username", username);
         params.append("senha", senha);
 
-        try {
-            const response = await fetch("http://localhost:8080/bd2026/login", {
+        try{
+            const response = await fetch("http://localhost:8080/backend/user/create", {
                 method: "POST",
-                credentials: "include",
                 body: params,
             });
 
             const data = await response.json();
 
-            if (data.status === "ok") {
-                localStorage.setItem("username", username);
+            if(data.status === "ok"){
                 setErro(false);
-                navigate("/dashboard");
-            } else {
+                setMensagem(data.mensagem);
+                setUsername("");
+                setSenha("");
+            }
+            else{
                 setErro(true);
                 setMensagem(data.mensagem);
             }
-        } catch (error) {
+        }
+        catch(error){
             setErro(true);
             setMensagem("Erro ao conectar com o servidor.");
         }
@@ -48,8 +49,8 @@ function Login() {
                             <div className="card-body p-5">
 
                                 <div className="text-center mb-4">
-                                    <h4 className="fw-bold mb-0" style={{ color: "#e0e0e0" }}>Feature Store</h4>
-                                    <p className="small mt-1" style={{ color: "#888" }}>Entre com sua conta para continuar</p>
+                                    <h4 className="fw-bold mb-0" style={{ color: "#e0e0e0" }}>Criar Conta</h4>
+                                    <p className="small mt-1" style={{ color: "#888" }}>Preencha os dados para se cadastrar</p>
                                 </div>
 
                                 {mensagem && (
@@ -58,7 +59,7 @@ function Login() {
                                     </div>
                                 )}
 
-                                <form onSubmit={handleSubmitLogin}>
+                                <form onSubmit={handleSubmitCadastro}>
                                     <div className="mb-3">
                                         <label className="form-label fw-semibold" style={{ color: "#e0e0e0" }}>Usuário</label>
                                         <input
@@ -83,16 +84,16 @@ function Login() {
                                             style={{ background: "#2e2e2e", border: "1px solid #444", color: "#e0e0e0" }}
                                         />
                                     </div>
-                                    <button type="submit" className="btn btn-primary btn-lg w-100 fw-bold">
-                                        Entrar
+                                    <button type="submit" className="btn btn-success btn-lg w-100 fw-bold">
+                                        Cadastrar
                                     </button>
                                 </form>
 
                                 <hr className="my-4" style={{ borderColor: "#333" }} />
                                 <p className="text-center mb-0 small" style={{ color: "#888" }}>
-                                    Não possui conta?{" "}
-                                    <Link to="/cadastro" className="fw-semibold text-decoration-none">
-                                        Cadastre-se aqui
+                                    Já tem uma conta?{" "}
+                                    <Link to="/" className="fw-semibold text-decoration-none">
+                                        Faça login
                                     </Link>
                                 </p>
 
@@ -105,4 +106,4 @@ function Login() {
     );
 }
 
-export default Login;
+export default CadastroUsuario;

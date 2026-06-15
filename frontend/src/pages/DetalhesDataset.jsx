@@ -6,7 +6,7 @@ function DetalhesDataset() {
     const [dataset, setDataset] = useState(null);
 
     useEffect(() => {
-        fetch(`http://localhost:8080/bd2026/dataset/read?id=${id}`)
+        fetch(`http://localhost:8080/backend/dataset/read?id=${id}`)
             .then(res => res.json())
             .then(data => setDataset(data));
     }, [id]);

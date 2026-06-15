@@ -1,0 +1,15 @@
+dao\DAO.class
+controller\UserController.class
+dao\PgDatasetDAO.class
+dao\PgUserDAO.class
+jdbc\ConnectionFactory.class
+dao\PgDAOFactory.class
+dao\DAOFactory.class
+controller\LoginController.class
+controller\DatasetController.class
+dao\UserDAO.class
+model\Dataset.class
+dao\DatasetDAO.class
+jdbc\PgConnectionFactory.class
+filters\CorsFilter.class
+model\User.class

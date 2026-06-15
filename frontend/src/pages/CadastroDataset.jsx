@@ -11,7 +11,7 @@ function CadastroDataset() {
         try{
             const dados = new URLSearchParams();
             dados.append("nome", nome);
-            const response = await fetch("http://localhost:8080/bd2026/dataset/create", {
+            const response = await fetch("http://localhost:8080/backend/dataset/create", {
                 method: "POST",
                 credentials: "include",
                 headers: {

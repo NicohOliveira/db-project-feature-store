@@ -17,7 +17,7 @@ function Dashboard() {
     };
 
     useEffect(() => {
-        fetch("http://localhost:8080/bd2026/dataset")
+        fetch("http://localhost:8080/backend/dataset")
             .then(res => res.json())
             .then(data => setDatasets(data));
     }, []);
