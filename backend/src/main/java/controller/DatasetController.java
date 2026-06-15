@@ -96,6 +96,8 @@ public class DatasetController extends HttpServlet {
                 break;
             }
 
+            /* Não foi usado, vou guardar para caso utilize no futuro.
+
             case "/user/create": {
                 dispatcher = request.getRequestDispatcher("/view/user/create.jsp");
                 dispatcher.forward(request, response);
@@ -130,23 +132,30 @@ public class DatasetController extends HttpServlet {
                 break;
             }
 
+            */
+
             case "/dataset/read": {
-                try (DAOFactory daoFactory = DAOFactory.getInstance()) {
-                    dao = daoFactory.getUserDAO();
+                response.setContentType("application/json");
+                response.setCharacterEncoding("UTF-8");
 
-                    user = dao.read(request.getParameter("id"));
+                try {
+                    int id = Integer.parseInt(request.getParameter("id"));
 
-                    Gson gson = new GsonBuilder().setDateFormat("dd/MM/yyyy").create();
-                    String json = gson.toJson(user);
+                    PgConnectionFactory factory = new PgConnectionFactory();
+                    Connection conn = factory.getConnection();
+                    PgDatasetDAO datasetDao = new PgDatasetDAO(conn);
 
-                    response.getOutputStream().print(json);
-                } catch (ClassNotFoundException | IOException | SQLException ex) {
-                    request.getSession().setAttribute("error", ex.getMessage());
-                    response.sendRedirect(request.getContextPath() + "/user");
+                    Dataset dataset = datasetDao.read(String.valueOf(id));
+
+                    Gson gson = new Gson();
+                    response.getWriter().write(gson.toJson(dataset));
+
+                } catch (Exception e) {
+                    response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                    response.getWriter().write("{\"status\": \"erro\", \"mensagem\": \"" + e.getMessage() + "\"}");
                 }
                 break;
             }
-
         }
 
     }
@@ -173,13 +182,13 @@ public class DatasetController extends HttpServlet {
             case "/dataset/create": {
                 response.setContentType("application/json");
                 response.setCharacterEncoding("UTF-8");
-                //tentando consertar o rpoblema do controller nao estar aceitando credenciais do react
+                // Tentando consertar o problema do controller nao estar aceitando credenciais do react
 
                 response.setHeader("Access-Control-Allow-Origin", "http://localhost:5173");
                 response.setHeader("Access-Control-Allow-Credentials", "true");
 
                 try {
-                    //tratamento de erro pra sessão nula
+                    // Tratamento de erro pra sessão nula
                     if (session == null || session.getAttribute("usuario") == null) {
                         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                         response.getWriter().write("{\"status\": \"erro\", \"mensagem\": \"Usuário não autenticado.\"}");

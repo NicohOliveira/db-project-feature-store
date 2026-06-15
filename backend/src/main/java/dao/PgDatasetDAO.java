@@ -43,9 +43,9 @@ public class PgDatasetDAO implements DatasetDAO {
                                 "ORDER BY username_criador;";
 
     private static final String READ_QUERY =
-                                "SELECT username " +
-                                "FROM Usuario " +
-                                "WHERE username = ?;";
+                                "SELECT * " +
+                                "FROM dataset " +
+                                "WHERE id_dataset = ?;";
 
     private static final String UPDATE_QUERY =
                                 "UPDATE Usuario " +
@@ -71,17 +71,35 @@ public class PgDatasetDAO implements DatasetDAO {
         } catch (SQLException ex) {
             Logger.getLogger(PgDatasetDAO.class.getName()).log(Level.SEVERE, "DAO", ex);
 
-            // fazer os errorMsg
+            // Fazer os errorMsg
 
-            //so erro de criação pq aceita nome igual kk
+            // So erro de criação pq aceita nome igual kk
             throw new SQLException("Erro ao criar repositório: " + ex.getMessage());
         }
     }
 
     @Override
     public Dataset read(String datasetId) throws SQLException {
-        // Um return de placeholder pra n acusar falta de implementação da interface DAO
-        return new Dataset(0, datasetId, datasetId);
+        int id = Integer.parseInt(datasetId);
+        Dataset dataset = new Dataset(id, null, null);
+
+        try (PreparedStatement statement = connection.prepareStatement(READ_QUERY)) {
+            statement.setInt(1, id);
+
+            ResultSet result = statement.executeQuery();
+
+            while (result.next()) {
+                dataset.setId(result.getInt("id_dataset"));
+                dataset.setNome(result.getString("nome"));
+                dataset.setUsernameCriador(result.getString("username_criador"));
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(PgUserDAO.class.getName()).log(Level.SEVERE, "DAO", ex);
+            
+            throw new SQLException("Erro ao buscar dataset.");
+        }
+
+        return dataset;
     }
 
     @Override
@@ -105,7 +123,6 @@ public class PgDatasetDAO implements DatasetDAO {
         }
 
         return datasets;
-
     }
 
     @Override
