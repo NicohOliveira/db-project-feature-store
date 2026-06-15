@@ -99,6 +99,15 @@ function Dashboard() {
                                         <div className="fw-bold" style={{ color: "#e0e0e0" }}>{d.nome}</div>
                                         <small style={{ color: "#888" }}>Criador: {d.username_criador}</small>
                                     </div>
+                                    
+                                    <div style={{ width: "70px" }}>
+                                        {d.username_criador === usuarioLogado ? (
+                                            <Link to={`/dataset/editar/${d.id}`} className="btn btn-outline-secondary btn-sm">
+                                                Editar
+                                            </Link>
+                                        ) : null }
+                                    </div>
+
                                     <Link to={`/dataset/${d.id}`} className="btn btn-outline-primary btn-sm flex-shrink-0">
                                         Ver
                                     </Link>

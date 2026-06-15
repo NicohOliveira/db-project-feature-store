@@ -48,9 +48,9 @@ public class PgDatasetDAO implements DatasetDAO {
                                 "WHERE id_dataset = ?;";
 
     private static final String UPDATE_QUERY =
-                                "UPDATE Usuario " +
-                                "SET senha = ? " +
-                                "WHERE username = ?;";
+                                "UPDATE dataset " +
+                                "SET nome = ? " +
+                                "WHERE id_dataset = ?;";
 
     private static final String DELETE_QUERY =
                                 "DELETE FROM Usuario " +
@@ -127,20 +127,17 @@ public class PgDatasetDAO implements DatasetDAO {
 
     @Override
     public void update(Dataset dataset) throws SQLException {
-        // try (PreparedStatement statement = connection.prepareStatement(UPDATE_QUERY)) {
-        //     // update tava feio cheio de comentario, adaptei ja pro bcrypt pra aproveitar e limpar
-        //     String senhaHash = BCrypt.hashpw(user.getSenha(), BCrypt.gensalt());
+        try (PreparedStatement statement = connection.prepareStatement(UPDATE_QUERY)) {
+            statement.setString(1, dataset.getNome());
+            statement.setInt(2, dataset.getId());
 
-        //     statement.setString(1, senhaHash);
-        //     statement.setString(2, user.getUsername());
-
-        //     if (statement.executeUpdate() < 1) {
-        //         throw new SQLException("Erro ao editar: usuário não encontrado.");
-        //     }
-        // } catch (SQLException ex) {
-        //     Logger.getLogger(PgUserDAO.class.getName()).log(Level.SEVERE, "DAO", ex);
-        //     throw new SQLException("Erro ao editar a senha do usuário.");
-        // }
+            if (statement.executeUpdate() < 1) {
+                throw new SQLException("Erro ao editar: dataset não encontrado.");
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(PgUserDAO.class.getName()).log(Level.SEVERE, "DAO", ex);
+            throw new SQLException("Erro ao atualizar dataset: " + ex.getMessage());
+        }
     }
 
     @Override
