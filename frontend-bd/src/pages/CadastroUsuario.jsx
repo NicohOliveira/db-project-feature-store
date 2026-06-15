@@ -41,40 +41,68 @@ function CadastroUsuario() {
     };
 
     return (
-        <div>
-        <h2>Cadastrar Usuário</h2>
+        <div className="min-vh-100 d-flex align-items-center justify-content-start" style={{ background: "#1a1a1a" }}>
+            <div className="container-fluid">
+                <div className="row">
+                    <div className="col-12 col-md-4 offset-md-2">
+                        <div className="card border-0 shadow" style={{ background: "#222222" }}>
+                            <div className="card-body p-5">
 
-        <form onSubmit={handleSubmitCadastro}>
-            <div>
-            <label>Nome de usuário</label>
-            <br/>
-            <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                maxLength={20}
-                required
-            />
-            </div>
-            <div>
-            <label>Senha</label>
-            <br/>
-            <input
-                type="password"
-                value={senha}
-                onChange={(e) => setSenha(e.target.value)}
-                required
-            />
-            </div>
-            <button type="submit">Cadastrar</button>
-        </form>
-            <div className="mt-3">
-                <p>Já tem uma conta? <Link to="/">Faça login</Link></p>
-            </div>
+                                <div className="text-center mb-4">
+                                    <h4 className="fw-bold mb-0" style={{ color: "#e0e0e0" }}>Criar Conta</h4>
+                                    <p className="small mt-1" style={{ color: "#888" }}>Preencha os dados para se cadastrar</p>
+                                </div>
 
-        {mensagem && (<p>{mensagem}</p>)}
+                                {mensagem && (
+                                    <div className={`alert ${erro ? "alert-danger" : "alert-success"} py-2`} role="alert">
+                                        {mensagem}
+                                    </div>
+                                )}
+
+                                <form onSubmit={handleSubmitCadastro}>
+                                    <div className="mb-3">
+                                        <label className="form-label fw-semibold" style={{ color: "#e0e0e0" }}>Usuário</label>
+                                        <input
+                                            type="text"
+                                            className="form-control form-control-sm"
+                                            placeholder="Willem_Dafoe"
+                                            value={username}
+                                            onChange={(e) => setUsername(e.target.value)}
+                                            required
+                                            style={{ background: "#2e2e2e", border: "1px solid #444", color: "#e0e0e0" }}
+                                        />
+                                    </div>
+                                    <div className="mb-4">
+                                        <label className="form-label fw-semibold" style={{ color: "#e0e0e0" }}>Senha</label>
+                                        <input
+                                            type="password"
+                                            className="form-control form-control-sm"
+                                            placeholder="••••••••"
+                                            value={senha}
+                                            onChange={(e) => setSenha(e.target.value)}
+                                            required
+                                            style={{ background: "#2e2e2e", border: "1px solid #444", color: "#e0e0e0" }}
+                                        />
+                                    </div>
+                                    <button type="submit" className="btn btn-success btn-lg w-100 fw-bold">
+                                        Cadastrar
+                                    </button>
+                                </form>
+
+                                <hr className="my-4" style={{ borderColor: "#333" }} />
+                                <p className="text-center mb-0 small" style={{ color: "#888" }}>
+                                    Já tem uma conta?{" "}
+                                    <Link to="/" className="fw-semibold text-decoration-none">
+                                        Faça login
+                                    </Link>
+                                </p>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-
     );
 }
 

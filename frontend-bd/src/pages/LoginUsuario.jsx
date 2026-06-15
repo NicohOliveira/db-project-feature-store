@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-
 function Login() {
     const [username, setUsername] = useState("");
     const [senha, setSenha] = useState("");
@@ -29,9 +28,6 @@ function Login() {
             if (data.status === "ok") {
                 localStorage.setItem("username", username);
                 setErro(false);
-                setMensagem(data.mensagem);
-                setUsername("");
-                setSenha("");
                 navigate("/dashboard");
             } else {
                 setErro(true);
@@ -39,47 +35,72 @@ function Login() {
             }
         } catch (error) {
             setErro(true);
-            setMensagem("erro ao conectar com o servidor.");
+            setMensagem("Erro ao conectar com o servidor.");
         }
     };
 
     return (
-        <div className="container mt-5" style={{ maxWidth: "400px" }}>
-            <h2>Entrar no Sistema</h2>
+        <div className="min-vh-100 d-flex align-items-center justify-content-start" style={{ background: "#1a1a1a" }}>
+            <div className="container-fluid">
+                <div className="row">
+                    <div className="col-12 col-md-4 offset-md-2">
+                        <div className="card border-0 shadow" style={{ background: "#222222" }}>
+                            <div className="card-body p-5">
 
-            <form onSubmit={handleSubmitLogin} className="mt-4">
-                <div className="mb-3">
-                    <label className="form-label">Nome de usuário</label>
-                    <input
-                        type="text"
-                        className="form-control"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        required
-                    />
-                </div>
-                <div className="mb-3">
-                    <label className="form-label">Senha</label>
-                    <input
-                        type="password"
-                        className="form-control"
-                        value={senha}
-                        onChange={(e) => setSenha(e.target.value)}
-                        required
-                    />
-                </div>
-                <button type="submit" className="btn btn-primary w-100">Entrar</button>
-            </form>
+                                <div className="text-center mb-4">
+                                    <h4 className="fw-bold mb-0" style={{ color: "#e0e0e0" }}>Feature Store</h4>
+                                    <p className="small mt-1" style={{ color: "#888" }}>Entre com sua conta para continuar</p>
+                                </div>
 
-            <div className="mt-3 text-center">
-                <p>Não possui conta? <Link to="/cadastro">Cadastre-se aqui</Link></p>
+                                {mensagem && (
+                                    <div className={`alert ${erro ? "alert-danger" : "alert-success"} py-2`} role="alert">
+                                        {mensagem}
+                                    </div>
+                                )}
+
+                                <form onSubmit={handleSubmitLogin}>
+                                    <div className="mb-3">
+                                        <label className="form-label fw-semibold" style={{ color: "#e0e0e0" }}>Usuário</label>
+                                        <input
+                                            type="text"
+                                            className="form-control form-control-sm"
+                                            placeholder="Willem_Dafoe"
+                                            value={username}
+                                            onChange={(e) => setUsername(e.target.value)}
+                                            required
+                                            style={{ background: "#2e2e2e", border: "1px solid #444", color: "#e0e0e0" }}
+                                        />
+                                    </div>
+                                    <div className="mb-4">
+                                        <label className="form-label fw-semibold" style={{ color: "#e0e0e0" }}>Senha</label>
+                                        <input
+                                            type="password"
+                                            className="form-control form-control-sm"
+                                            placeholder="••••••••"
+                                            value={senha}
+                                            onChange={(e) => setSenha(e.target.value)}
+                                            required
+                                            style={{ background: "#2e2e2e", border: "1px solid #444", color: "#e0e0e0" }}
+                                        />
+                                    </div>
+                                    <button type="submit" className="btn btn-primary btn-lg w-100 fw-bold">
+                                        Entrar
+                                    </button>
+                                </form>
+
+                                <hr className="my-4" style={{ borderColor: "#333" }} />
+                                <p className="text-center mb-0 small" style={{ color: "#888" }}>
+                                    Não possui conta?{" "}
+                                    <Link to="/cadastro" className="fw-semibold text-decoration-none">
+                                        Cadastre-se aqui
+                                    </Link>
+                                </p>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-
-            {mensagem && (
-                <p className="mt-3 text-center" style={{ color: erro ? "red" : "green", fontWeight: "bold" }}>
-                    {mensagem}
-                </p>
-            )}
         </div>
     );
 }

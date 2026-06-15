@@ -54,8 +54,11 @@ body {
   margin: 0;
 }
 
+::placeholder {
+    color: #747474 !important;
+}
+
 #root {
-  width: 1126px;
   max-width: 100%;
   margin: 0 auto;
   text-align: center;

@@ -30,17 +30,17 @@ function CadastroDataset() {
             }
         } catch (error) {
             console.error("Erro na requisição:", error);
-            alert("Erro ao conectar. O servidor Java tá rodando mesmo?:c ");
+            alert("Erro ao conectar. O servidor Java tá rodando mesmo? :c ");
         }
 
         navigate("/dashboard");
     };
 
     return (
-        <div className="d-flex vh-100 bg-light justify-content-center align-items-center">
-            <div className="card shadow p-4 border-0" style={{ width: "100%", maxWidth: "600px" }}>
+        <div className="d-flex vh-100 justify-content-center align-items-center" style={{ background: "#1a1a1a" }}>
+            <div className="card shadow p-4 border-0" style={{ width: "100%", maxWidth: "600px", background: "#222222" }}>
                 <div className="d-flex justify-content-between align-items-center mb-4">
-                    <h3 className="mb-0">Novo Dataset</h3>
+                    <h3 className="mb-0" style={{ color: "#e0e0e0" }}>Novo Dataset</h3>
                     <Link to="/dashboard" className="btn btn-outline-secondary btn-sm">
                         Voltar
                     </Link>
@@ -48,7 +48,7 @@ function CadastroDataset() {
 
                 <form onSubmit={handleSalvar}>
                     <div className="mb-4">
-                        <label className="form-label fw-bold">Nome do Dataset</label>
+                        <label className="form-label fw-bold" style={{ color: "#e0e0e0" }}>Nome do Dataset</label>
                         <input
                             type="text"
                             className="form-control"
@@ -56,8 +56,9 @@ function CadastroDataset() {
                             onChange={(e) => setNome(e.target.value)}
                             placeholder="Ex: dados_climaticos_2026"
                             required
+                            style={{ background: "#2e2e2e", border: "1px solid #444", color: "#e0e0e0" }}
                         />
-                        <small className="form-text text-muted">
+                        <small style={{ color: "#888" }}>
                             a primeira versão (bronze) será inserida depois
                         </small>
                     </div>
