@@ -34,8 +34,8 @@ public class PgDatasetDAO implements DatasetDAO {
                                 "WHERE username = ?;";
     
     private static final String CREATE_QUERY =
-                                "INSERT INTO Dataset(id, nome, username_criador) " +
-                                "VALUES(?, ?, ?);";
+                                "INSERT INTO Dataset(nome, username_criador) " +
+                                "VALUES( ?, ?);";
     
     private static final String ALL_QUERY =
                                 "SELECT * " +
@@ -63,22 +63,18 @@ public class PgDatasetDAO implements DatasetDAO {
     @Override
     public void create(Dataset dataset) throws SQLException {
         try (PreparedStatement statement = connection.prepareStatement(CREATE_QUERY)) {
-            statement.setString(1, String.valueOf(dataset.getId()));
-            statement.setString(2, dataset.getNome());
-            statement.setString(3, dataset.getUsernameCriador());
+            //statement.setString(1, String.valueOf(dataset.getId()));
+            statement.setString(1, dataset.getNome());
+            statement.setString(2, dataset.getUsernameCriador());
 
             statement.executeUpdate();
         } catch (SQLException ex) {
-            Logger.getLogger(PgUserDAO.class.getName()).log(Level.SEVERE, "DAO", ex);
+            Logger.getLogger(PgDatasetDAO.class.getName()).log(Level.SEVERE, "DAO", ex);
 
             // fazer os errorMsg
-            if (ex.getMessage().contains("usuario_pkey")) {
-                throw new SQLException("Erro ao criar dataset: nome de usuário já existe.");
-            } else if (ex.getMessage().contains("not-null")) {
-                throw new SQLException("Erro ao inserir usuário: pelo menos um campo está em branco.");
-            } else {
-                throw new SQLException("Erro ao inserir usuário.");
-            }
+
+            //so erro de criação pq aceita nome igual kk
+            throw new SQLException("Erro ao criar repositório: " + ex.getMessage());
         }
     }
 

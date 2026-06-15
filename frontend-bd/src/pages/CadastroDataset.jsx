@@ -5,11 +5,33 @@ function CadastroDataset() {
     const [nome, setNome] = useState("");
     const navigate = useNavigate();
 
-    const handleSalvar = (e) => {
+    const handleSalvar = async (e) => {
         e.preventDefault();
 
-        console.log("Dados prontos para enviar:", { nome });
-        alert("interface pronta so falta eu fazer a integração com back depois");
+        try{
+            const dados = new URLSearchParams();
+            dados.append("nome", nome);
+            const response = await fetch("http://localhost:8080/bd2026/dataset/create", {
+                method: "POST",
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+                body: dados.toString()
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.status === "ok") {
+                alert("Repositório criado com sucesso!");
+                navigate("/dashboard");
+            } else {
+                alert("Erro do Java: " + data.mensagem);
+            }
+        } catch (error) {
+            console.error("Erro na requisição:", error);
+            alert("Erro ao conectar. O servidor Java tá rodando mesmo?:c ");
+        }
 
         navigate("/dashboard");
     };

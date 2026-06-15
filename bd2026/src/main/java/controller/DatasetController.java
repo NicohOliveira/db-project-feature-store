@@ -170,32 +170,42 @@ public class DatasetController extends HttpServlet {
         String servletPath = request.getServletPath();
 
         switch (request.getServletPath()) {
-            case "/user/create": {
+            case "/dataset/create": {
                 response.setContentType("application/json");
                 response.setCharacterEncoding("UTF-8");
+                //tentando consertar o rpoblema do controller nao estar aceitando credenciais do react
+
+                response.setHeader("Access-Control-Allow-Origin", "http://localhost:5173");
+                response.setHeader("Access-Control-Allow-Credentials", "true");
 
                 try {
-                    String username = request.getParameter("username");
-                    String senha = request.getParameter("senha");
+                    //tratamento de erro pra sessão nula
+                    if (session == null || session.getAttribute("usuario") == null) {
+                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                        response.getWriter().write("{\"status\": \"erro\", \"mensagem\": \"Usuário não autenticado.\"}");
+                        return;
+                    }
+                    User usuarioLogado = (User) session.getAttribute("usuario");
 
-                    User usuario = new User(username, senha);
+                    String nome = request.getParameter("nome");
 
+                    if (nome == null || nome.trim().isEmpty()) {
+                        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                        response.getWriter().write("{\"status\": \"erro\", \"mensagem\": \"O nome do dataset é obrigatório.\"}");
+                        return;
+                    }
+
+                    Dataset novoDataset = new Dataset(0, nome, usuarioLogado.getUsername());
                     PgConnectionFactory factory = new PgConnectionFactory();
                     Connection conn = factory.getConnection();
-                    PgUserDAO usuarioDao = new PgUserDAO(conn);
-                    usuarioDao.create(usuario);
+                    PgDatasetDAO datasetDao = new PgDatasetDAO(conn);
+                    datasetDao.create(novoDataset);
 
                     response.setStatus(HttpServletResponse.SC_OK);
-                    response.getWriter().write("{\"status\": \"ok\", \"mensagem\": \"Usuário cadastrado com sucesso!\"}");
-
+                    response.getWriter().write("{\"status\": \"ok\", \"mensagem\": \"Repositório criado com sucesso!\"}");
                 } catch (Exception e) {
                     response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                    
-                    if (e.getMessage() != null && e.getMessage().contains("duplicate key")) {
-                        response.getWriter().write("{\"status\": \"erro\", \"mensagem\": \"Nome de usuário já existe.\"}");
-                    } else {
-                        response.getWriter().write("{\"status\": \"erro\", \"mensagem\": \"" + e.getMessage() + "\"}");
-                    }
+                    response.getWriter().write("{\"status\": \"erro\", \"mensagem\": \"" + e.getMessage() + "\"}");
                 }
                 break;
             }
