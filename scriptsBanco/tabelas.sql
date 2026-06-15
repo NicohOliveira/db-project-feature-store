@@ -75,3 +75,5 @@ CREATE TABLE Registro_Acesso (
         REFERENCES Versao(id_dataset, num_versao)
         ON DELETE CASCADE
 );
+
+ALTER TABLE Dataset ADD CONSTRAINT dataset_nome_unique UNIQUE (nome);
