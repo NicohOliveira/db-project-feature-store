@@ -20,6 +20,7 @@ function Login() {
         try {
             const response = await fetch("http://localhost:8080/bd2026/login", {
                 method: "POST",
+                credentials: "include",
                 body: params,
             });
 

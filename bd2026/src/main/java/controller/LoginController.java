@@ -88,6 +88,9 @@ public class LoginController extends HttpServlet {
         User user = new User(null, null);
         HttpSession session = request.getSession();
 
+        response.setHeader("Access-Control-Allow-Origin", "http://localhost:5173");
+        response.setHeader("Access-Control-Allow-Credentials", "true");
+
         switch (request.getServletPath()) {
             case "/login":
                 response.setContentType("application/json");
