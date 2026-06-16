@@ -3,6 +3,7 @@ package controller;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import dao.DAOFactory;
+import dao.UserDAO;
 import dao.VersaoDAO;
 
 import java.io.File;
@@ -13,15 +14,16 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.Part;
-import javax.servlet.annotation.MultipartConfig;
 
 import model.Versao;
+import model.User;
 
 @WebServlet(name = "VersaoController",
         urlPatterns = {
@@ -33,9 +35,7 @@ import model.Versao;
             "/versao/update",
             "/versao/delete"
         })
-
 @MultipartConfig(maxFileSize = 1024 * 1024 * 4)
-
 public class VersaoController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -44,7 +44,49 @@ public class VersaoController extends HttpServlet {
         response.setHeader("Access-Control-Allow-Origin", "http://localhost:5173");
         response.setHeader("Access-Control-Allow-Credentials", "true");
 
+        HttpSession session = request.getSession();
+
         switch (request.getServletPath()) {
+
+            case "/versao/delete": {
+                response.setContentType("application/json");
+                response.setCharacterEncoding("UTF-8");
+
+                try (DAOFactory daoFactory = DAOFactory.getInstance()) {
+                    dao = daoFactory.getVersaoDAO();
+
+                    User usuarioLogado = (User) session.getAttribute("usuario");
+
+                    if (usuarioLogado == null) {
+                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                        response.getWriter().write("{\"status\": \"erro\", \"mensagem\": \"Usuário não autenticado.\"}");
+                        return;
+                    }
+
+                    String idVersao = request.getParameter("id");
+                    String senha    = request.getParameter("senha");
+
+                    // valida a senha do usuario logado
+                    UserDAO userDao = daoFactory.getUserDAO();
+                    User credenciais = new User(usuarioLogado.getUsername(), senha);
+                    userDao.authenticate(credenciais);
+
+                    // deleta com a trava de segurança (só apaga se for o autor)
+                    dao.deleteV(idVersao, usuarioLogado.getUsername());
+
+                    response.setStatus(HttpServletResponse.SC_OK);
+                    response.getWriter().write("{\"status\": \"sucesso\"}");
+
+                } catch (SecurityException e) {
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.getWriter().write("{\"status\": \"erro\", \"mensagem\": \"Senha incorreta.\"}");
+                } catch (Exception e) {
+                    response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                    response.getWriter().write("{\"status\": \"erro\", \"mensagem\": \"" + e.getMessage() + "\"}");
+                }
+                break;
+            }
+
             case "/versao/read": {
                 response.setContentType("application/json");
                 response.setCharacterEncoding("UTF-8");
@@ -130,24 +172,20 @@ public class VersaoController extends HttpServlet {
                             return;
                         }
 
-                        File downloadFile = new File(versao.getArquivoCsv());
+                        String uploadDir = request.getServletContext().getRealPath("") + File.separator + "arquivos_csv";
+                        File downloadFile = new File(uploadDir + File.separator + versao.getArquivoCsv());
                         if (!downloadFile.exists()) {
-                            response.sendError(HttpServletResponse.SC_NOT_FOUND, "Arquivo físico não encontrado no servidor. :( ");
+                            response.sendError(HttpServletResponse.SC_NOT_FOUND, "Arquivo físico não encontrado no servidor.");
                             return;
                         }
 
-                        // em tese faz baixar o arquivo
-
                         response.setContentType("text/csv");
                         response.setContentLength((int) downloadFile.length());
-                        String headerKey = "Content-Disposition";
-                        String headerValue = String.format("attachment; filename=\"%s\"", downloadFile.getName());
-                        response.setHeader(headerKey, headerValue);
-
-                        // e entao escreve os bytes na resposta http
+                        response.setHeader("Content-Disposition",
+                                String.format("attachment; filename=\"%s\"", downloadFile.getName()));
 
                         try (FileInputStream inStream = new FileInputStream(downloadFile);
-                            OutputStream outStream = response.getOutputStream()) {
+                             OutputStream outStream = response.getOutputStream()) {
 
                             byte[] buffer = new byte[4096];
                             int bytesRead;
@@ -197,6 +235,7 @@ public class VersaoController extends HttpServlet {
                     String detalhesFeature = request.getParameter("detalhes_feature");
 
                     Part arquivoPart = request.getPart("arquivo");
+                    System.out.println(">>> DEBUG: Tamanho do arquivo recebido: " + (arquivoPart != null));
                     if (arquivoPart == null || arquivoPart.getSize() == 0) {
                         response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                         response.getWriter().write("{\"status\": \"erro\", \"mensagem\": \"Arquivo CSV é obrigatório.\"}");
@@ -208,7 +247,10 @@ public class VersaoController extends HttpServlet {
 
                     String fileName = idDataset + "_v" + numVersaoBase + "_" + System.currentTimeMillis() + ".csv";
                     String caminhoArquivo = uploadDir + File.separator + fileName;
+                    System.out.println(">>> DEBUG: Caminho completo onde o arquivo será salvo: " + caminhoArquivo);
+                    System.out.println(">>> DEBUG: Número de caracteres no caminho: " + caminhoArquivo.length());
                     arquivoPart.write(caminhoArquivo);
+                    System.out.println(">>> DEBUG: Arquivo escrito com sucesso");
 
                     versao = new Versao();
 

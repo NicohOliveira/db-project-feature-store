@@ -3,6 +3,10 @@ import { useParams, useNavigate } from "react-router-dom";
 
 
 function HistoricoLinhagem({ id }) {
+
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [versaoParaDeletar, setVersaoParaDeletar] = useState(null);
+    const [password, setPassword] = useState("");
     const [versoes, setVersoes] = useState([]);
     const [carregando, setCarregando] = useState(true);
     const [erro, setErro] = useState(null);
@@ -56,9 +60,42 @@ function HistoricoLinhagem({ id }) {
         }
     };
 
+    const deletarVersao = async () => {
+        try {
+            const idComposto = `${id}-${versaoParaDeletar.numVersao}`;
+
+            const response = await fetch(`http://localhost:8080/backend/versao/delete?id=${idComposto}&senha=${password}`, {
+                method: "GET", // ou POST, ajuste conforme seu Controller
+                credentials: "include"
+            });
+
+            if (response.ok) {
+                alert("Versão excluída com sucesso!");
+                setShowDeleteModal(false);
+                setPassword("");
+                window.location.reload();
+            } else {
+                const data = await response.json();
+                alert("Erro: " + data.mensagem);
+            }
+        } catch (error) {
+            alert("Erro ao conectar no servidor.");
+        }
+    };
+
     if (carregando) return <div className="container mt-5 text-light"><div className="spinner-border text-light" role="status"></div> Carregando histórico...</div>;
     if (erro) return <div className="container mt-5 alert alert-danger bg-dark text-danger border-danger">{erro}</div>;
-    if (versoes.length === 0) return <div className="container mt-5 alert alert-warning bg-dark text-warning border-warning">Nenhuma versão encontrada para este repositório.</div>;
+    
+    if (versoes.length === 0) return (
+        <div>
+            <div className="container mt-5 alert alert-warning bg-dark text-warning border-warning">
+                Nenhuma versão encontrada para este repositório.
+            </div>
+            <button className="btn btn-primary fw-bold" onClick={() => navigate(`/versao/create/${id}/${0}`)}>
+                Adicionar a primeira versão para este repositório :)
+            </button>
+        </div>
+    );
 
     return (
        <div className="text-light" style={{ width: "100%" }}>
@@ -138,6 +175,16 @@ function HistoricoLinhagem({ id }) {
                                                     Criar versão a partir desta
                                                 </button>
                                                 <button
+                                                    className="btn btn-danger fw-bold px-4 shadow" // Botão vermelho
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setVersaoParaDeletar(versao);
+                                                        setShowDeleteModal(true);
+                                                    }}
+                                                >
+                                                    Excluir
+                                                </button>
+                                                <button
                                                     className="btn btn-success fw-bold px-4 shadow"
                                                     onClick={(e) => {
                                                         e.stopPropagation();
@@ -155,6 +202,24 @@ function HistoricoLinhagem({ id }) {
                     })}
                 </div>
             </div>
+           {showDeleteModal && (
+               <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", background: "rgba(0,0,0,0.8)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}>
+                   <div className="bg-dark p-4 rounded border border-danger text-light" style={{ width: "300px" }}>
+                       <h5>Confirmar exclusão</h5>
+                       <p>Versão {versaoParaDeletar.numVersao}. Digite sua senha:</p>
+                       <input
+                           type="password"
+                           className="form-control mb-3"
+                           value={password}
+                           onChange={(e) => setPassword(e.target.value)}
+                       />
+                       <div className="d-flex gap-2">
+                           <button className="btn btn-danger w-100" onClick={deletarVersao}>Confirmar</button>
+                           <button className="btn btn-secondary w-100" onClick={() => setShowDeleteModal(false)}>Cancelar</button>
+                       </div>
+                   </div>
+               </div>
+           )}
         </div>
     );
 }

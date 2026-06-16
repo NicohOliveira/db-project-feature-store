@@ -49,9 +49,12 @@ public class PgVersaoDAO implements VersaoDAO {
     //                             "SET nome = ? " +
     //                             "WHERE id_dataset = ?;";
 
-    // private static final String DELETE_QUERY =
-    //                             "DELETE FROM Usuario " +
-    //                             "WHERE username = ?;";
+    // modifiquei a exclusao padrao pra uma camada de segurança a mais
+    private static final String DELETE_QUERY =
+                                "DELETE FROM Versao " +
+                                "WHERE id_dataset = ? " +
+                                "AND num_versao = ? " + 
+                                "AND username_autor = ?;";
 
     public PgVersaoDAO(Connection connection) {
         this.connection = connection;
@@ -69,8 +72,14 @@ public class PgVersaoDAO implements VersaoDAO {
             statement.setTime(7, versao.getHoraRegistro());
             statement.setString(8, versao.getDescricaoModificacoes());
             statement.setString(9, versao.getUsernameAutor());
-            statement.setInt(10, versao.getIdDatasetBase());
-            statement.setInt(11, versao.getNumVersaoBase());
+
+            if (versao.getNumVersaoBase() == 0) {
+                statement.setNull(10, java.sql.Types.INTEGER);
+                statement.setNull(11, java.sql.Types.INTEGER);
+            } else {
+                statement.setInt(10, versao.getIdDatasetBase());
+                statement.setInt(11, versao.getNumVersaoBase());
+            }
 
             statement.executeUpdate();
         } catch (SQLException ex) {
@@ -137,9 +146,29 @@ public class PgVersaoDAO implements VersaoDAO {
 
     @Override
     public void delete(String id) throws SQLException {
-        // placeholder
+        // Se este método for chamado, ele não sabe quem é o dono.
+        // Ou você bloqueia (lança erro), ou se não for usado, deixa vazio.
+        throw new UnsupportedOperationException("usar o delete(String id, String username) para exclusão segura.");
     }
 
+    public void deleteV(String id, String usernameAutor) throws SQLException {
+        String[] partes = id.split("-");
+        int idDataset = Integer.parseInt(partes[0]);
+        int numVersao = Integer.parseInt(partes[1]);
+
+        try (PreparedStatement statement = connection.prepareStatement(DELETE_QUERY)) {
+            statement.setInt(1, idDataset);
+            statement.setInt(2, numVersao);
+            statement.setString(3, usernameAutor); // A trava de segurança!
+
+            if (statement.executeUpdate() < 1) {
+                throw new SQLException("Erro ao excluir: versão não encontrada ou sem permissão.");
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(PgVersaoDAO.class.getName()).log(Level.SEVERE, "DAO", ex);
+            throw new SQLException("Erro ao excluir versão: " + ex.getMessage());
+        }
+    }
     @Override
     public List<Versao> all() throws SQLException {
         // placeholder
