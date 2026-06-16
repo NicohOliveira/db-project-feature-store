@@ -85,7 +85,17 @@ function HistoricoLinhagem({ id }) {
 
     if (carregando) return <div className="container mt-5 text-light"><div className="spinner-border text-light" role="status"></div> Carregando histórico...</div>;
     if (erro) return <div className="container mt-5 alert alert-danger bg-dark text-danger border-danger">{erro}</div>;
-    if (versoes.length === 0) return <div className="container mt-5 alert alert-warning bg-dark text-warning border-warning">Nenhuma versão encontrada para este repositório.</div>;
+    
+    if (versoes.length === 0) return (
+        <div>
+            <div className="container mt-5 alert alert-warning bg-dark text-warning border-warning">
+                Nenhuma versão encontrada para este repositório.
+            </div>
+            <button className="btn btn-primary fw-bold" onClick={() => navigate(`/versao/create/${id}/${0}`)}>
+                Adicionar a primeira versão para este repositório :)
+            </button>
+        </div>
+    );
 
     return (
        <div className="text-light" style={{ width: "100%" }}>

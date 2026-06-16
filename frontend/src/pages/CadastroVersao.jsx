@@ -15,6 +15,11 @@ function CadastroVersao() {
     const [erro, setErro] = useState(null);
 
     useEffect(() => {
+        if (idVers === "0") {
+            setCarregando(false);
+            return;
+        }
+
         fetch(`http://localhost:8080/backend/versao/read?id_dataset=${idData}&num_versao=${idVers}`, {
             method: "GET",
             credentials: "include"
@@ -86,7 +91,11 @@ function CadastroVersao() {
                 </div>
 
                 <h3 className="mb-1" style={{ color: "#e0e0e0" }}>Nova Versão</h3>
-                <p style={{ color: "#888" }}>Derivada da Versão {idVers}</p>
+                { idVers > 0 ? (
+                    <p style={{ color: "#888" }}>Derivada da Versão {idVers}</p>
+                ) : (
+                    <p style={{ color: "#888" }}>Primeira versão do repositório!</p>
+                ) }
 
                 <br/>
 

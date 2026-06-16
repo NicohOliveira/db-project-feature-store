@@ -69,8 +69,14 @@ public class PgVersaoDAO implements VersaoDAO {
             statement.setTime(7, versao.getHoraRegistro());
             statement.setString(8, versao.getDescricaoModificacoes());
             statement.setString(9, versao.getUsernameAutor());
-            statement.setInt(10, versao.getIdDatasetBase());
-            statement.setInt(11, versao.getNumVersaoBase());
+
+            if (versao.getNumVersaoBase() == 0) {
+                statement.setNull(10, java.sql.Types.INTEGER);
+                statement.setNull(11, java.sql.Types.INTEGER);
+            } else {
+                statement.setInt(10, versao.getIdDatasetBase());
+                statement.setInt(11, versao.getNumVersaoBase());
+            }
 
             statement.executeUpdate();
         } catch (SQLException ex) {
