@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
+
 
 function HistoricoLinhagem({ id }) {
     const [versoes, setVersoes] = useState([]);
     const [carregando, setCarregando] = useState(true);
     const [erro, setErro] = useState(null);
-
+    
     // estado para controlar qual versão tá expandida (aberta)
     const [versaoExpandida, setVersaoExpandida] = useState(null);
+    
+    const navigate = useNavigate();
 
     useEffect(() => {
         fetch(`http://localhost:8080/backend/versao/history?id_dataset=${id}`, {
@@ -130,11 +133,14 @@ function HistoricoLinhagem({ id }) {
                                                 </div>
                                             </div>
 
-                                            <div className="col-md-4 d-flex align-items-end justify-content-md-end mt-3 mt-md-0">
+                                            <div className="col-md-4 d-flex flex-column align-items-end justify-content-md-end mt-3 mt-md-0 gap-2">
+                                                <button className="btn btn-primary fw-bold" onClick={() => navigate(`/versao/create/${id}/${versao.numVersao}`)}>
+                                                    Criar versão a partir desta
+                                                </button>
                                                 <button
                                                     className="btn btn-success fw-bold px-4 shadow"
                                                     onClick={(e) => {
-                                                        e.stopPropagation(); // Evita que o clique feche a sanfona
+                                                        e.stopPropagation();
                                                         baixarArquivo(versao.numVersao);
                                                     }}
                                                 >
