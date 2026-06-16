@@ -54,7 +54,7 @@ function EditarDataset() {
                             <div className="card-body p-5">
                                 <div className="d-flex justify-content-between align-items-center mb-4">
                                     <Link to="/dashboard" className="btn btn-outline-secondary btn-sm">
-                                        ← Voltar
+                                        Voltar
                                     </Link>
                                 </div>
 
