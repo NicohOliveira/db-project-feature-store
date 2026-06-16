@@ -24,26 +24,59 @@ public class PgVersaoDAO implements VersaoDAO {
 
     private final Connection connection;
 
+    private static final String GETALL_QUERY =
+            "SELECT username, senha " +
+                    "FROM usuario " +
+                    "WHERE username = ?;";
+
+    private static final String CREATE_QUERY =
+            "INSERT INTO Versao(id_dataset, num_versao, arquivo_csv, detalhes_feature, nivel_maturidade, data_registro, hora_registro, descricao_modificacoes, username_autor, id_dataset_base, num_versao_base) " +
+                    "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+
+    private static final String ALL_QUERY =
+            "SELECT * " +
+                    "FROM dataset " +
+                    "ORDER BY username_criador;";
+
+    private static final String READ_QUERY =
+            "SELECT * " +
+                    "FROM Versao " +
+                    "WHERE id_dataset = ? AND num_versao = ?;";
+
+    private static final String UPDATE_QUERY =
+            "UPDATE dataset " +
+                    "SET nome = ? " +
+                    "WHERE id_dataset = ?;";
+
+    // modifiquei a exclusao padrao pra uma camada de segurança a mais
+    private static final String DELETE_QUERY =
+            "DELETE FROM Versao " +
+                    "WHERE id_dataset = ? AND num_versao = ? AND username_autor = ?;";
+
     public PgVersaoDAO(Connection connection) {
         this.connection = connection;
     }
 
     @Override
-    public void create(Versao t) throws SQLException {
-        /*     try (PreparedStatement statement = connection.prepareStatement(CREATE_QUERY)) {
-            //statement.setString(1, String.valueOf(dataset.getId()));
-            statement.setString(1, dataset.getNome());
-            statement.setString(2, dataset.getUsernameCriador());
+    public void create(Versao versao) throws SQLException {
+        try (PreparedStatement statement = connection.prepareStatement(CREATE_QUERY)) {
+            statement.setInt(1, versao.getIdDataset());
+            statement.setInt(2, versao.getNumVersao());
+            statement.setString(3, versao.getArquivoCsv());
+            statement.setString(4, versao.getDetalhesFeature());
+            statement.setInt(5, versao.getNivelMaturidade());
+            statement.setDate(6, versao.getDataRegistro());
+            statement.setTime(7, versao.getHoraRegistro());
+            statement.setString(8, versao.getDescricaoModificacoes());
+            statement.setString(9, versao.getUsernameAutor());
+            statement.setInt(10, versao.getIdDatasetBase());
+            statement.setInt(11, versao.getNumVersaoBase());
 
             statement.executeUpdate();
         } catch (SQLException ex) {
             Logger.getLogger(PgDatasetDAO.class.getName()).log(Level.SEVERE, "DAO", ex);
-
-            // fazer os errorMsg
-
-            //so erro de criação pq aceita nome igual kk
-            throw new SQLException("Erro ao criar repositório: " + ex.getMessage());
-        }COMENTANDO POIS USEI O DO DATASET DE BASE*/
+            throw new SQLException("Erro ao criar versão: " + ex.getMessage());
+        }
     }
 
     // vou usar read pra minha parte entao implementei
@@ -118,18 +151,29 @@ public class PgVersaoDAO implements VersaoDAO {
 
     @Override
     public void delete(String id) throws SQLException {
-        // try (PreparedStatement statement = connection.prepareStatement(DELETE_QUERY)) {
-        //     statement.setString(1, username);
-
-        //     if (statement.executeUpdate() < 1) {
-        //         throw new SQLException("Erro ao excluir: usuário não encontrado.");
-        //     }
-        // } catch (SQLException ex) {
-        //     Logger.getLogger(PgUserDAO.class.getName()).log(Level.SEVERE, "DAO", ex);
-        //         throw new SQLException("Erro ao excluir usuário.");
-        // }
+        // Se este método for chamado, ele não sabe quem é o dono.
+        // Ou você bloqueia (lança erro), ou se não for usado, deixa vazio.
+        throw new UnsupportedOperationException("usar o delete(String id, String username) para exclusão segura.");
     }
 
+    public void delete(String id, String usernameAutor) throws SQLException {
+        String[] partes = id.split("-");
+        int idDataset = Integer.parseInt(partes[0]);
+        int numVersao = Integer.parseInt(partes[1]);
+
+        try (PreparedStatement statement = connection.prepareStatement(DELETE_QUERY)) {
+            statement.setInt(1, idDataset);
+            statement.setInt(2, numVersao);
+            statement.setString(3, usernameAutor); // A trava de segurança!
+
+            if (statement.executeUpdate() < 1) {
+                throw new SQLException("Erro ao excluir: versão não encontrada ou sem permissão.");
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(PgVersaoDAO.class.getName()).log(Level.SEVERE, "DAO", ex);
+            throw new SQLException("Erro ao excluir versão: " + ex.getMessage());
+        }
+    }
     @Override
     public List<Versao> all() throws SQLException {
         //retorno so pro dao nao chiar
