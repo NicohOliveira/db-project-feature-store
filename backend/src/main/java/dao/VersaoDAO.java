@@ -15,4 +15,5 @@ import model.Versao;
 public interface VersaoDAO extends DAO<Versao> {
     public List<Versao> listByDataset(int idDataset) throws SQLException;
     public Versao read(String id) throws SQLException;
+    public void deleteV(String id, String usernameAutor) throws SQLException;
 }
