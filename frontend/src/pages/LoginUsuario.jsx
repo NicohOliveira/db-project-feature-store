@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 function Login() {
@@ -7,6 +7,12 @@ function Login() {
     const [mensagem, setMensagem] = useState("");
     const [erro, setErro] = useState(false);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        if (localStorage.getItem("username") != null) {
+            navigate("/dashboard");
+        }
+    }, []);
 
     const handleSubmitLogin = async (e) => {
         e.preventDefault();
