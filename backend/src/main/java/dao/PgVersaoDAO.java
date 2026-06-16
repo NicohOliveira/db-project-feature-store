@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import model.Dataset;
 import model.Versao;
 
 /**
@@ -23,34 +22,36 @@ import model.Versao;
 public class PgVersaoDAO implements VersaoDAO {
 
     private final Connection connection;
-
-        private static final String GETALL_QUERY =
-                                "SELECT username, senha " +
-                                "FROM usuario " +
-                                "WHERE username = ?;";
     
     private static final String CREATE_QUERY =
                                 "INSERT INTO Versao(id_dataset, num_versao, arquivo_csv, detalhes_feature, nivel_maturidade, data_registro, hora_registro, descricao_modificacoes, username_autor, id_dataset_base, num_versao_base) " +
                                 "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
     
-    private static final String ALL_QUERY =
-                                "SELECT * " +
-                                "FROM dataset " +
-                                "ORDER BY username_criador;";
+    // private static final String ALL_QUERY =
+    //                             "SELECT * " +
+    //                             "FROM Versao " +
+    //                             "ORDER BY username_criador;";
 
     private static final String READ_QUERY =
                                 "SELECT * " +
-                                "FROM dataset " +
-                                "WHERE id_dataset = ?;";
+                                "FROM Versao " +
+                                "WHERE id_dataset = ? " +
+                                "AND num_versao = ?;";
 
-    private static final String UPDATE_QUERY =
-                                "UPDATE dataset " +
-                                "SET nome = ? " +
-                                "WHERE id_dataset = ?;";
+    private static final String READASC_QUERY =
+                                "SELECT * " +
+                                "FROM Versao " +
+                                "WHERE id_dataset = ? " +
+                                "ORDER BY num_versao ASC;";
 
-    private static final String DELETE_QUERY =
-                                "DELETE FROM Usuario " +
-                                "WHERE username = ?;";
+    // private static final String UPDATE_QUERY =
+    //                             "UPDATE dataset " +
+    //                             "SET nome = ? " +
+    //                             "WHERE id_dataset = ?;";
+
+    // private static final String DELETE_QUERY =
+    //                             "DELETE FROM Usuario " +
+    //                             "WHERE username = ?;";
 
     public PgVersaoDAO(Connection connection) {
         this.connection = connection;
@@ -100,9 +101,8 @@ public class PgVersaoDAO implements VersaoDAO {
         }
 
         Versao v = null;
-        String sql = "SELECT * FROM Versao WHERE id_dataset = ? AND num_versao = ?;";
 
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+        try (PreparedStatement stmt = connection.prepareStatement(READ_QUERY)) {
             stmt.setInt(1, idDataset);
             stmt.setInt(2, numVersao);
 
@@ -132,39 +132,17 @@ public class PgVersaoDAO implements VersaoDAO {
 
     @Override
     public void update(Versao t) throws SQLException {
-        // try (PreparedStatement statement = connection.prepareStatement(UPDATE_QUERY)) {
-        //     // update tava feio cheio de comentario, adaptei ja pro bcrypt pra aproveitar e limpar
-        //     String senhaHash = BCrypt.hashpw(user.getSenha(), BCrypt.gensalt());
-
-        //     statement.setString(1, senhaHash);
-        //     statement.setString(2, user.getUsername());
-
-        //     if (statement.executeUpdate() < 1) {
-        //         throw new SQLException("Erro ao editar: usuário não encontrado.");
-        //     }
-        // } catch (SQLException ex) {
-        //     Logger.getLogger(PgUserDAO.class.getName()).log(Level.SEVERE, "DAO", ex);
-        //     throw new SQLException("Erro ao editar a senha do usuário.");
-        // }
+        // placeholder
     }
 
     @Override
     public void delete(String id) throws SQLException {
-        // try (PreparedStatement statement = connection.prepareStatement(DELETE_QUERY)) {
-        //     statement.setString(1, username);
-
-        //     if (statement.executeUpdate() < 1) {
-        //         throw new SQLException("Erro ao excluir: usuário não encontrado.");
-        //     }
-        // } catch (SQLException ex) {
-        //     Logger.getLogger(PgUserDAO.class.getName()).log(Level.SEVERE, "DAO", ex);
-        //         throw new SQLException("Erro ao excluir usuário.");
-        // }
+        // placeholder
     }
 
     @Override
     public List<Versao> all() throws SQLException {
-        //retorno so pro dao nao chiar
+        // placeholder
         return new ArrayList<>();
     }
 
@@ -173,10 +151,10 @@ public class PgVersaoDAO implements VersaoDAO {
     @Override
     public List<Versao> listByDataset(int idDataset) throws SQLException {
         List<Versao> historico = new ArrayList<>();
-        String sql = "SELECT * FROM Versao WHERE id_dataset = ? ORDER BY num_versao ASC;";
 
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+        try (PreparedStatement stmt = connection.prepareStatement(READASC_QUERY)) {
             stmt.setInt(1, idDataset);
+            
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
                     Versao v = new Versao();

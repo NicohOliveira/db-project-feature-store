@@ -1,6 +1,6 @@
 import { useNavigate, Link, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
-import HistoricoLinhagem from "./HistoricoLinhagem";
+import HistoricoLinhagem from "../components/HistoricoLinhagem";
 
 function DetalhesDataset() {
     const { id } = useParams();

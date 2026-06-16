@@ -4,8 +4,6 @@
  */
 package dao;
 
-import java.sql.SQLException;
-import java.util.List;
 import model.Dataset;
 
 public interface DatasetDAO extends DAO<Dataset> {

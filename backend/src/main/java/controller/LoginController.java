@@ -7,8 +7,6 @@ package controller;
 import dao.DAOFactory;
 import dao.UserDAO;
 import java.io.IOException;
-import java.sql.SQLException;
-import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -22,15 +20,13 @@ import model.User;
  * @author dskaster
  */
 @WebServlet(name = "LoginController", 
-                urlPatterns = {
+        urlPatterns = {
             "",
             "/logout",
             "/login"
         })
 
 public class LoginController extends HttpServlet {
-
-    // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**
      * Handles the HTTP <code>GET</code> method.
      *
@@ -42,20 +38,10 @@ public class LoginController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession session;
-        RequestDispatcher dispatcher;
-
+        
         switch (request.getServletPath()) {
             case "": {
-                session = request.getSession(false);
-
-                if (session != null && session.getAttribute("usuario") != null) {
-                    dispatcher = request.getRequestDispatcher("/welcome.jsp");
-                } else {
-                    dispatcher = request.getRequestDispatcher("/index.jsp");
-                }
-
-                dispatcher.forward(request, response);
-
+                // placeholder
                 break;
             }
             
@@ -80,31 +66,35 @@ public class LoginController extends HttpServlet {
      * @throws IOException if an I/O error occurs
      */
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         UserDAO dao;
         User user = new User(null, null);
         HttpSession session = request.getSession();
 
+        String servletPath = request.getServletPath();
+
         response.setHeader("Access-Control-Allow-Origin", "http://localhost:5173");
         response.setHeader("Access-Control-Allow-Credentials", "true");
 
-        switch (request.getServletPath()) {
+        switch (servletPath) {
             case "/login":
                 response.setContentType("application/json");
-                response.setCharacterEncoding("UTF-8"); //resposta da rrquisição será em json
+                response.setCharacterEncoding("UTF-8");
 
-                user.setUsername(request.getParameter("username")); //mudei pra username pra manter o padrao
+                // mudei pra username pra manter o padrao
+                user.setUsername(request.getParameter("username"));
                 user.setSenha(request.getParameter("senha"));
 
                 try (DAOFactory daoFactory = DAOFactory.getInstance()) {
                     dao = daoFactory.getUserDAO();
                     dao.authenticate(user);
+                    
                     session.setAttribute("usuario", user);
 
-                    response.setStatus(HttpServletResponse.SC_OK); //aqui só adicionei pra retornar sucesso em json
+                    // aqui só adicionei pra retornar sucesso em json
+                    response.setStatus(HttpServletResponse.SC_OK);
                     response.getWriter().write("{\"status\": \"ok\", \"mensagem\": \"Login realizado com sucesso!\"}");
+                
                 } catch (Exception ex ) {
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     response.getWriter().write("{\"status\": \"erro\", \"mensagem\": \"Usuário ou senha incorretos.\"}");
@@ -112,14 +102,9 @@ public class LoginController extends HttpServlet {
         }                        
     }
 
-    /**
-     * Returns a short description of the servlet.
-     *
-     * @return a String containing servlet description
-     */
     @Override
     public String getServletInfo() {
-        return "Short description";
-    }// </editor-fold>
+        return "Controller responsável por operações de login / logout.";
+    }
 
 }

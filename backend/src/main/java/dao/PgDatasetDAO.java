@@ -13,12 +13,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.xml.crypto.Data;
-
-import org.mindrot.jbcrypt.BCrypt;
-
 import model.Dataset;
-import model.User;
 
 /**
  *
@@ -28,10 +23,10 @@ public class PgDatasetDAO implements DatasetDAO {
 
     private final Connection connection;
 
-    private static final String GETALL_QUERY =
-                                "SELECT username, senha " +
-                                "FROM usuario " +
-                                "WHERE username = ?;";
+    // private static final String GETALL_QUERY =
+    //                             "SELECT nome, username_criador " +
+    //                             "FROM dataset " +
+    //                             "WHERE username_criador = ?;";
     
     private static final String CREATE_QUERY =
                                 "INSERT INTO Dataset(nome, username_criador) " +
@@ -52,9 +47,9 @@ public class PgDatasetDAO implements DatasetDAO {
                                 "SET nome = ? " +
                                 "WHERE id_dataset = ?;";
 
-    private static final String DELETE_QUERY =
-                                "DELETE FROM Usuario " +
-                                "WHERE username = ?;";
+    // private static final String DELETE_QUERY =
+    //                             "DELETE FROM Usuario " +
+    //                             "WHERE username = ?;";
     
     public PgDatasetDAO(Connection connection) {
         this.connection = connection;
@@ -63,17 +58,12 @@ public class PgDatasetDAO implements DatasetDAO {
     @Override
     public void create(Dataset dataset) throws SQLException {
         try (PreparedStatement statement = connection.prepareStatement(CREATE_QUERY)) {
-            //statement.setString(1, String.valueOf(dataset.getId()));
             statement.setString(1, dataset.getNome());
             statement.setString(2, dataset.getUsernameCriador());
 
             statement.executeUpdate();
         } catch (SQLException ex) {
             Logger.getLogger(PgDatasetDAO.class.getName()).log(Level.SEVERE, "DAO", ex);
-
-            // Fazer os errorMsg
-
-            // So erro de criação pq aceita nome igual kk
             throw new SQLException("Erro ao criar repositório: " + ex.getMessage());
         }
     }
@@ -95,7 +85,6 @@ public class PgDatasetDAO implements DatasetDAO {
             }
         } catch (SQLException ex) {
             Logger.getLogger(PgUserDAO.class.getName()).log(Level.SEVERE, "DAO", ex);
-            
             throw new SQLException("Erro ao buscar dataset.");
         }
 
@@ -111,14 +100,15 @@ public class PgDatasetDAO implements DatasetDAO {
 
             while (result.next()) {
                 Dataset d = new Dataset(0, null, null);
+                
                 d.setId(result.getInt("id_dataset"));
                 d.setNome(result.getString("nome"));
                 d.setUsernameCriador(result.getString("username_criador"));
+
                 datasets.add(d);
             }
         } catch (SQLException ex) {
             Logger.getLogger(PgUserDAO.class.getName()).log(Level.SEVERE, "DAO", ex);
-            
             throw new SQLException("Erro ao listar datasets.");
         }
 
@@ -142,39 +132,6 @@ public class PgDatasetDAO implements DatasetDAO {
 
     @Override
     public void delete(String username) throws SQLException {
-        // try (PreparedStatement statement = connection.prepareStatement(DELETE_QUERY)) {
-        //     statement.setString(1, username);
-
-        //     if (statement.executeUpdate() < 1) {
-        //         throw new SQLException("Erro ao excluir: usuário não encontrado.");
-        //     }
-        // } catch (SQLException ex) {
-        //     Logger.getLogger(PgUserDAO.class.getName()).log(Level.SEVERE, "DAO", ex);
-        //         throw new SQLException("Erro ao excluir usuário.");
-        // }
+        // placeholder
     }
-
-    /*
-
-    @Override
-    public List<User> all() throws SQLException {
-        List<User> userList = new ArrayList<>();
-
-        try (PreparedStatement statement = connection.prepareStatement(ALL_QUERY);
-             ResultSet result = statement.executeQuery()) {
-            while (result.next()) {
-                User user = new User(null, null);
-                user.setUsername(result.getString("username"));
-                userList.add(user);
-            }
-        } catch (SQLException ex) {
-            Logger.getLogger(PgUserDAO.class.getName()).log(Level.SEVERE, "DAO", ex);
-
-            throw new SQLException("Erro ao listar usuários.");
-        }
-
-        return userList;        
-    }
-
-    */
 }

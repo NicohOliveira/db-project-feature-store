@@ -79,11 +79,7 @@ public class PgUserDAO implements UserDAO {
             throw new SQLException("Erro ao autenticar usuário.");
         }                
     }
-    @Override
-    public User getByLogin(String login) throws SQLException {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }/* nao sei q fazer com isso por enquanto entao deixarei pro java nao chorar*/
-
+    
     @Override
     public void create(User user) throws SQLException {
         try (PreparedStatement statement = connection.prepareStatement(CREATE_QUERY)) {
