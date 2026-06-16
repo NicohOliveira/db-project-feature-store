@@ -24,6 +24,22 @@ public class PgVersaoDAO implements VersaoDAO {
 
     private final Connection connection;
 
+    private static final String READ_QUERY =
+            "SELECT * " +
+                    "FROM Versao " +
+                    "WHERE id_dataset = ? AND num_versao = ?;";
+
+    private static final String LIST_BY_DATASET_QUERY =
+            "SELECT * " +
+                    "FROM Versao " +
+                    "WHERE id_dataset = ? " +
+                    "ORDER BY num_versao ASC;";
+
+    // modifiquei a exclusao padrao pra uma camada de segurança a mais
+    private static final String DELETE_QUERY =
+            "DELETE FROM Versao " +
+                    "WHERE id_dataset = ? AND num_versao = ? AND username_autor = ?;";
+
     public PgVersaoDAO(Connection connection) {
         this.connection = connection;
     }
@@ -68,9 +84,8 @@ public class PgVersaoDAO implements VersaoDAO {
         }
 
         Versao v = null;
-        String sql = "SELECT * FROM Versao WHERE id_dataset = ? AND num_versao = ?;";
 
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+        try (PreparedStatement stmt = connection.prepareStatement(READ_QUERY)) {
             stmt.setInt(1, idDataset);
             stmt.setInt(2, numVersao);
 
@@ -116,18 +131,32 @@ public class PgVersaoDAO implements VersaoDAO {
         // }
     }
 
+    // 1. Esse método é o que a interface obriga a implementar.
+    // Se você não for usar ele, pode deixar vazio ou lançar uma exceção.
     @Override
     public void delete(String id) throws SQLException {
-        // try (PreparedStatement statement = connection.prepareStatement(DELETE_QUERY)) {
-        //     statement.setString(1, username);
+        // Se este método for chamado, ele não sabe quem é o dono.
+        // Ou você bloqueia (lança erro), ou se não for usado, deixa vazio.
+        throw new UnsupportedOperationException("usar o delete(String id, String username) para exclusão segura.");
+    }
 
-        //     if (statement.executeUpdate() < 1) {
-        //         throw new SQLException("Erro ao excluir: usuário não encontrado.");
-        //     }
-        // } catch (SQLException ex) {
-        //     Logger.getLogger(PgUserDAO.class.getName()).log(Level.SEVERE, "DAO", ex);
-        //         throw new SQLException("Erro ao excluir usuário.");
-        // }
+    public void delete(String id, String usernameAutor) throws SQLException {
+        String[] partes = id.split("-");
+        int idDataset = Integer.parseInt(partes[0]);
+        int numVersao = Integer.parseInt(partes[1]);
+
+        try (PreparedStatement statement = connection.prepareStatement(DELETE_QUERY)) {
+            statement.setInt(1, idDataset);
+            statement.setInt(2, numVersao);
+            statement.setString(3, usernameAutor); // A trava de segurança!
+
+            if (statement.executeUpdate() < 1) {
+                throw new SQLException("Erro ao excluir: versão não encontrada ou sem permissão.");
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(PgVersaoDAO.class.getName()).log(Level.SEVERE, "DAO", ex);
+            throw new SQLException("Erro ao excluir versão: " + ex.getMessage());
+        }
     }
 
     @Override
@@ -136,14 +165,13 @@ public class PgVersaoDAO implements VersaoDAO {
         return new ArrayList<>();
     }
 
-    // metodos especificos que irei usar pratentar fazer minha árte
+    // metodos especificos que irei usar pra tentar fazer minha parte
 
     @Override
     public List<Versao> listByDataset(int idDataset) throws SQLException {
         List<Versao> historico = new ArrayList<>();
-        String sql = "SELECT * FROM Versao WHERE id_dataset = ? ORDER BY num_versao ASC;";
 
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+        try (PreparedStatement stmt = connection.prepareStatement(LIST_BY_DATASET_QUERY)) {
             stmt.setInt(1, idDataset);
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {

@@ -6,6 +6,8 @@ import dao.DAO;
 import dao.DAOFactory;
 import dao.PgDatasetDAO;
 import dao.VersaoDAO;
+import dao.UserDAO;
+import dao.PgVersaoDAO;
 import jdbc.PgConnectionFactory;
 
 import java.io.File;
@@ -54,6 +56,7 @@ public class VersaoController extends HttpServlet {
         response.setHeader("Access-Control-Allow-Origin", "http://localhost:5173");
         response.setHeader("Access-Control-Allow-Credentials", "true");
 
+        HttpSession session = request.getSession();
         switch (request.getServletPath()) {
            /* case "/dataset/create": {
                 response.setContentType("application/json");
@@ -187,38 +190,34 @@ public class VersaoController extends HttpServlet {
                     response.sendRedirect(request.getContextPath() + servletPath);
                 }
                 break;
-            }
+            }*/
 
-            case "/user/delete": {
-                String[] users = request.getParameterValues("delete");
+            case "/versao/delete": {
+                response.setContentType("application/json");
+                response.setCharacterEncoding("UTF-8");
 
                 try (DAOFactory daoFactory = DAOFactory.getInstance()) {
-                    dao = daoFactory.getUserDAO();
+                    User usuarioLogado = (User) session.getAttribute("usuario");
+                    String idVersao = request.getParameter("id");
+                    String senha = request.getParameter("senha");
 
-                    try {
-                        daoFactory.beginTransaction();
+                    if (usuarioLogado == null) throw new Exception("Usuário não autenticado.");
+                    UserDAO userDao = daoFactory.getUserDAO();
+                    User credenciais = new User(usuarioLogado.getUsername(), senha);
+                    userDao.authenticate(credenciais);
+                    PgVersaoDAO versaoDao = (PgVersaoDAO) daoFactory.getVersaoDAO();
 
-                        for (String userId : users) {
-                            dao.delete(userId);
-                        }
+                    versaoDao.delete(idVersao, usuarioLogado.getUsername());
 
-                        daoFactory.commitTransaction();
-                        daoFactory.endTransaction();
-                    } catch (SQLException ex) {
-                        session.setAttribute("error", ex.getMessage());
-                        daoFactory.rollbackTransaction();
-                    }
-                } catch (ClassNotFoundException | IOException ex) {
-                    Logger.getLogger(UserController.class.getName()).log(Level.SEVERE, "Controller", ex);
-                    session.setAttribute("error", ex.getMessage());
-                } catch (SQLException ex) {
-                    Logger.getLogger(UserController.class.getName()).log(Level.SEVERE, "Controller", ex);
-                    session.setAttribute("rollbackError", ex.getMessage());
+                    response.setStatus(HttpServletResponse.SC_OK);
+                    response.getWriter().write("{\"status\": \"sucesso\"}");
+
+                } catch (Exception e) {
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.getWriter().write("{\"status\": \"erro\", \"mensagem\": \"" + e.getMessage() + "\"}");
                 }
-
-                response.sendRedirect(request.getContextPath() + "/user");
                 break;
-            } */
+            }
 
             case "/versao/history": {
                 response.setContentType("application/json");
@@ -236,7 +235,6 @@ public class VersaoController extends HttpServlet {
 
                     PgConnectionFactory factory = new PgConnectionFactory();
                     Connection conn = factory.getConnection();
-                    // Usando o PgVersaoDAO que criamos anteriormente
                     dao.PgVersaoDAO versaoDao = new dao.PgVersaoDAO(conn);
 
                     // Busca a lista completa de versões daquele dataset

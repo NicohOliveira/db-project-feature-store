@@ -2,6 +2,10 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
 function HistoricoLinhagem({ id }) {
+
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [versaoParaDeletar, setVersaoParaDeletar] = useState(null);
+    const [password, setPassword] = useState("");
     const [versoes, setVersoes] = useState([]);
     const [carregando, setCarregando] = useState(true);
     const [erro, setErro] = useState(null);
@@ -50,6 +54,29 @@ function HistoricoLinhagem({ id }) {
                 return <span className="badge" style={{ backgroundColor: "#FFD700", color: "#000" }}>Ouro</span>;
             default:
                 return <span className="badge bg-secondary text-light">Indefinido</span>;
+        }
+    };
+
+    const deletarVersao = async () => {
+        try {
+            const idComposto = `${id}-${versaoParaDeletar.numVersao}`;
+
+            const response = await fetch(`http://localhost:8080/backend/versao/delete?id=${idComposto}&senha=${password}`, {
+                method: "GET", // ou POST, ajuste conforme seu Controller
+                credentials: "include"
+            });
+
+            if (response.ok) {
+                alert("Versão excluída com sucesso!");
+                setShowDeleteModal(false);
+                setPassword("");
+                window.location.reload();
+            } else {
+                const data = await response.json();
+                alert("Erro: " + data.mensagem);
+            }
+        } catch (error) {
+            alert("Erro ao conectar no servidor.");
         }
     };
 
@@ -132,6 +159,16 @@ function HistoricoLinhagem({ id }) {
 
                                             <div className="col-md-4 d-flex align-items-end justify-content-md-end mt-3 mt-md-0">
                                                 <button
+                                                    className="btn btn-danger fw-bold px-4 shadow" // Botão vermelho
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setVersaoParaDeletar(versao);
+                                                        setShowDeleteModal(true);
+                                                    }}
+                                                >
+                                                    Excluir
+                                                </button>
+                                                <button
                                                     className="btn btn-success fw-bold px-4 shadow"
                                                     onClick={(e) => {
                                                         e.stopPropagation(); // Evita que o clique feche a sanfona
@@ -149,6 +186,24 @@ function HistoricoLinhagem({ id }) {
                     })}
                 </div>
             </div>
+           {showDeleteModal && (
+               <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", background: "rgba(0,0,0,0.8)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}>
+                   <div className="bg-dark p-4 rounded border border-danger text-light" style={{ width: "300px" }}>
+                       <h5>Confirmar exclusão</h5>
+                       <p>Versão {versaoParaDeletar.numVersao}. Digite sua senha:</p>
+                       <input
+                           type="password"
+                           className="form-control mb-3"
+                           value={password}
+                           onChange={(e) => setPassword(e.target.value)}
+                       />
+                       <div className="d-flex gap-2">
+                           <button className="btn btn-danger w-100" onClick={deletarVersao}>Confirmar</button>
+                           <button className="btn btn-secondary w-100" onClick={() => setShowDeleteModal(false)}>Cancelar</button>
+                       </div>
+                   </div>
+               </div>
+           )}
         </div>
     );
 }
