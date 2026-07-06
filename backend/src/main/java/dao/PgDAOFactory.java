@@ -29,4 +29,8 @@ public class PgDAOFactory extends DAOFactory {
     public VersaoDAO getVersaoDAO() {
         return new PgVersaoDAO(this.connection);
     }
+    @Override
+    public FonteDAO getFonteDAO() {
+        return new PgFonteDAO(this.connection);
+    }
 }

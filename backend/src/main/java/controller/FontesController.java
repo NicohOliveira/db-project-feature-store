@@ -7,6 +7,7 @@ package controller;
 import com.google.gson.Gson;
 import dao.DAO;
 import dao.DAOFactory;
+import dao.FonteDAO;
 
 import java.io.IOException;
 import java.util.List;
@@ -15,24 +16,22 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
-import model.Dataset;
-import model.User;
+import model.VersaoFontes;
 
 /**
  *
  * @author dskaster
  */
-@WebServlet(name = "DatasetController",
+@WebServlet(name = "FontesController",
         urlPatterns = {
-            "/dataset",
-            "/dataset/create",
-            "/dataset/update",
-            "/dataset/delete",
-            "/dataset/read"
+            "/source",
+            "/source/create",
+            "/source/update",
+            "/source/delete",
+            "/source/read"
         })
-public class DatasetController extends HttpServlet {
+public class FontesController extends HttpServlet {
     /**
      * Handles the HTTP <code>GET</code> method.
      *
@@ -43,21 +42,27 @@ public class DatasetController extends HttpServlet {
      */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        DAO<Dataset> dao;
-        Dataset dataset;
+        FonteDAO dao;
+        VersaoFontes fonte;
+
+        response.setHeader("Access-Control-Allow-Origin", "http://localhost:5173");
+        response.setHeader("Access-Control-Allow-Credentials", "true");
 
         switch (request.getServletPath()) {
-            case "/dataset": {
+            case "/source": {
                 response.setContentType("application/json");
                 response.setCharacterEncoding("UTF-8");
 
                 try (DAOFactory daoFactory = DAOFactory.getInstance()) {
-                    dao = daoFactory.getDatasetDAO();
+                    dao = daoFactory.getFonteDAO();
 
-                    List<Dataset> datasets = dao.all();
+                    int datasetId  = Integer.parseInt(request.getParameter("id_dataset"));
+                    int num_versao = Integer.parseInt(request.getParameter("numVersao"));
+
+                    List<VersaoFontes> fontes = dao.allDatasetVersionSources(datasetId, num_versao);
 
                     Gson gson = new Gson();
-                    String json = gson.toJson(datasets);
+                    String json = gson.toJson(fontes);
 
                     response.getWriter().write(json);
 
@@ -68,23 +73,8 @@ public class DatasetController extends HttpServlet {
                 break;
             }
 
-            case "/dataset/read": {
-                response.setContentType("application/json");
-                response.setCharacterEncoding("UTF-8");
-
-                try (DAOFactory daoFactory = DAOFactory.getInstance()) {
-                    dao = daoFactory.getDatasetDAO();
-
-                    int id = Integer.parseInt(request.getParameter("id"));
-                    dataset = dao.read(String.valueOf(id));
-
-                    Gson gson = new Gson();
-                    response.getWriter().write(gson.toJson(dataset));
-                    
-                } catch (Exception e) {
-                    response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                    response.getWriter().write("{\"status\": \"erro\", \"mensagem\": \"" + e.getMessage() + "\"}");
-                }
+            case "/source/read": {
+                // placeholder
                 break;
             }
         }
@@ -100,14 +90,13 @@ public class DatasetController extends HttpServlet {
      */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        DAO<Dataset> dao;
-        Dataset dataset;
-        HttpSession session = request.getSession();
+        FonteDAO dao;
+        VersaoFontes fonte;
 
         String servletPath = request.getServletPath();
 
         switch (servletPath) {
-            case "/dataset/create": {
+            case "/source/create": {
                 response.setContentType("application/json");
                 response.setCharacterEncoding("UTF-8");
 
@@ -115,30 +104,46 @@ public class DatasetController extends HttpServlet {
                 response.setHeader("Access-Control-Allow-Credentials", "true");
 
                 try {
-                    // Tratamento de erro pra sessão nula
-                    if (session == null || session.getAttribute("usuario") == null) {
-                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                        response.getWriter().write("{\"status\": \"erro\", \"mensagem\": \"Usuário não autenticado.\"}");
-                        return;
-                    }
-                    User usuarioLogado = (User) session.getAttribute("usuario");
+                    String datasetIdStr = request.getParameter("datasetId");
+                    String versaoStr = request.getParameter("versao");
+                    
+                    String[] listaFontes = request.getParameterValues("fontes");
 
-                    String nome = request.getParameter("nome");
-
-                    if (nome == null || nome.trim().isEmpty()) {
+                    if (datasetIdStr == null || datasetIdStr.trim().isEmpty() || 
+                        versaoStr == null || versaoStr.trim().isEmpty()) {
                         response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                        response.getWriter().write("{\"status\": \"erro\", \"mensagem\": \"O nome do dataset é obrigatório.\"}");
+                        response.getWriter().write("{\"status\": \"erro\", \"mensagem\": \"datasetId e versao são obrigatórios.\"}");
                         return;
                     }
 
-                    dataset = new Dataset(0, nome, usuarioLogado.getUsername());
+                    int datasetId;
+                    int versao;
+
+                    try {
+                        datasetId = Integer.parseInt(datasetIdStr);
+                        versao = Integer.parseInt(versaoStr);
+                    } catch (NumberFormatException nfe) {
+                        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                        response.getWriter().write("{\"status\": \"erro\", \"mensagem\": \"datasetId ou versao precisam ser números válidos.\"}");
+                        return;
+                    }
+
+                    if (listaFontes == null) {
+                        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                        response.getWriter().write("{\"status\": \"erro\", \"mensagem\": \"A fonte de origem é obrigatória.\"}");
+                        return;
+                    }
                     
                     try (DAOFactory daoFactory = DAOFactory.getInstance()){
-                        dao = daoFactory.getDatasetDAO();
-                        dao.create(dataset);
+                        dao = daoFactory.getFonteDAO();
+
+                        for(String fonteObj : listaFontes){
+                            fonte = new VersaoFontes(datasetId, versao, fonteObj);
+                            dao.create(fonte);
+                        }
 
                         response.setStatus(HttpServletResponse.SC_OK);
-                        response.getWriter().write("{\"status\": \"ok\", \"mensagem\": \"Repositório criado com sucesso!\"}");
+                        response.getWriter().write("{\"status\": \"ok\", \"mensagem\": \"Fonte(s) associada(s) com sucesso!\"}");
                     
                     }
                 } catch (Exception e) {
@@ -147,28 +152,29 @@ public class DatasetController extends HttpServlet {
                 }
                 break;
             }
-            case "/dataset/update": {
+            case "/source/update": {
                 response.setContentType("application/json");
                 response.setCharacterEncoding("UTF-8");
 
                 try {
-                    int id = Integer.parseInt(request.getParameter("id"));
-                    String nome = request.getParameter("nome");
+                    int datasetId = Integer.parseInt(request.getParameter("datasetId"));
+                    int versao = Integer.parseInt(request.getParameter("versao"));
+                    String fonteStr = request.getParameter("fonte");
 
-                    if (nome == null || nome.trim().isEmpty()) {
+                    if (fonteStr == null || fonteStr.trim().isEmpty()) {
                         response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                        response.getWriter().write("{\"status\": \"erro\", \"mensagem\": \"Nome é obrigatório.\"}");
+                        response.getWriter().write("{\"status\": \"erro\", \"mensagem\": \"A fonte de origem é obrigatória.\"}");
                         return;
                     }
 
-                    dataset = new Dataset(id, nome, null);
+                    fonte = new VersaoFontes(datasetId, versao, fonteStr);
 
                     try (DAOFactory daoFactory = DAOFactory.getInstance()){
-                        dao = daoFactory.getDatasetDAO();
-                        dao.update(dataset);
+                        dao = daoFactory.getFonteDAO();
+                        dao.update(fonte);
 
                         response.setStatus(HttpServletResponse.SC_OK);
-                        response.getWriter().write("{\"status\": \"ok\", \"mensagem\": \"Dataset atualizado com sucesso!\"}");
+                        response.getWriter().write("{\"status\": \"ok\", \"mensagem\": \"Fonte atualizada com sucesso!\"}");
                     
                     }
                 } catch (Exception e) {
@@ -178,7 +184,7 @@ public class DatasetController extends HttpServlet {
                 break;
             }
 
-            case "/dataset/delete": {
+            case "/source/delete": {
                 // placeholder
                 break;
             }
@@ -189,7 +195,7 @@ public class DatasetController extends HttpServlet {
 
     @Override
     public String getServletInfo() {
-        return "Controller responsável pelas operações relacionadas aos datasets (repositórios).";
+        return "Controller responsável pelas operações relacionadas as fontes de versões.";
     }
 
 }

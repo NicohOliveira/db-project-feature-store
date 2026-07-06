@@ -286,7 +286,7 @@ public class VersaoController extends HttpServlet {
                         dao.create(versao);
 
                         response.setStatus(HttpServletResponse.SC_OK);
-                        response.getWriter().write("{\"status\": \"ok\", \"mensagem\": \"Versão criada com sucesso!\"}");
+                        response.getWriter().write("{\"status\": \"ok\", \"mensagem\": \"Versão criada com sucesso!\", \"numVersao\": " + proximoNum + "}");
 
                     }
                 } catch (Exception e) {
