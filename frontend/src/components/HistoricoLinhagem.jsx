@@ -13,6 +13,14 @@ function HistoricoLinhagem({ id }) {
     
     // estado para controlar qual versão tá expandida (aberta)
     const [versaoExpandida, setVersaoExpandida] = useState(null);
+
+    const [featuresExpandidas, setFeaturesExpandidas] = useState({});
+    const toggleFeatures = (numVersao) => {
+        setFeaturesExpandidas(prev => ({
+            ...prev,
+            [numVersao]: !prev[numVersao]
+        }));
+    };
     
     const navigate = useNavigate();
 
@@ -162,11 +170,60 @@ function HistoricoLinhagem({ id }) {
 
                                                 <div>
                                                     <h6 className="text-uppercase text-secondary fw-bold" style={{ fontSize: "12px", letterSpacing: "1px" }}>
-                                                        Detalhes da Feature (Colunas/Formato)
+                                                        Dicionário de Features
                                                     </h6>
-                                                    <p className="mb-0 text-light" style={{ whiteSpace: "pre-wrap" }}>
-                                                        {versao.detalhesFeature || "Nenhum detalhe técnico informado."}
-                                                    </p>
+
+                                                    {versao.features && versao.features.length > 0 ? (
+                                                        <div className="mt-2">
+                                                            <div className="table-responsive">
+                                                                <table className="table table-sm table-dark table-bordered border-secondary mb-0" style={{ fontSize: "14px" }}>
+                                                                    <thead className="table-active text-secondary">
+                                                                    <tr>
+                                                                        <th style={{ width: "30%" }}>Coluna</th>
+                                                                        <th style={{ width: "20%" }}>Tipo</th>
+                                                                        <th style={{ width: "50%" }}>Descrição</th>
+                                                                    </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                    {/* MÁGICA AQUI: Mostra todas se estiver expandido, senão mostra só as 3 primeiras */}
+                                                                    {(featuresExpandidas[versao.numVersao]
+                                                                            ? versao.features
+                                                                            : versao.features.slice(0, 3)
+                                                                    ).map((feat, idx) => (
+                                                                        <tr key={idx}>
+                                                                            <td className="fw-bold">{feat.nomeColuna}</td>
+                                                                            <td>{feat.tipoDado || "-"}</td>
+                                                                            <td>{feat.descricao || "-"}</td>
+                                                                        </tr>
+                                                                    ))}
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+
+                                                            {/* Botão de Ver Mais, só aparece se tiver mais de 3 features */}
+                                                            {versao.features.length > 3 && (
+                                                                <div className="text-center mt-2">
+                                                                    <button
+                                                                        className="btn btn-sm text-info text-decoration-none fw-bold"
+                                                                        style={{ background: "transparent", border: "none" }}
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation(); // Evita que feche o acordeão da versão
+                                                                            toggleFeatures(versao.numVersao);
+                                                                        }}
+                                                                    >
+                                                                        {featuresExpandidas[versao.numVersao]
+                                                                            ? "⬆ Ocultar colunas"
+                                                                            : `⬇ Ver todas as ${versao.features.length} colunas`
+                                                                        }
+                                                                    </button>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    ) : (
+                                                        <p className="mb-0 text-secondary" style={{ fontStyle: "italic", fontSize: "14px" }}>
+                                                            Nenhum detalhe de feature informado.
+                                                        </p>
+                                                    )}
                                                 </div>
                                             </div>
 

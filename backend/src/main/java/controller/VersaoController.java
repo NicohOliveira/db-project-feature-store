@@ -5,6 +5,10 @@ import com.google.gson.GsonBuilder;
 import dao.DAOFactory;
 import dao.UserDAO;
 import dao.VersaoDAO;
+import com.google.gson.reflect.TypeToken;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import model.Feature;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -232,8 +236,14 @@ public class VersaoController extends HttpServlet {
                     int numVersaoBase      = Integer.parseInt(request.getParameter("num_versao_base"));
                     String usernameAutor   = request.getParameter("username_autor");
                     String descricao       = request.getParameter("descricao_modificacoes");
-                    String detalhesFeature = request.getParameter("detalhes_feature");
-
+                    String featuresJson = request.getParameter("features");
+                    System.out.println(">>> JSON RECEBIDO NO JAVA: " + featuresJson);
+                    List<Feature> listaFeatures = new ArrayList<>();
+                    if (featuresJson != null && !featuresJson.trim().isEmpty()) {
+                        Type listType = new TypeToken<List<Feature>>(){}.getType(); // Usando List em vez de ArrayList
+                        listaFeatures = new Gson().fromJson(featuresJson, listType);
+                        System.out.println(">>> [CONTROLLER] GSON CONVERTEU. QTD NA LISTA: " + listaFeatures.size());
+                    }
                     Part arquivoPart = request.getPart("arquivo");
                     System.out.println(">>> DEBUG: Tamanho do arquivo recebido: " + (arquivoPart != null));
                     if (arquivoPart == null || arquivoPart.getSize() == 0) {
@@ -259,8 +269,8 @@ public class VersaoController extends HttpServlet {
                     versao.setIdDatasetBase(idDataset);
                     versao.setUsernameAutor(usernameAutor);
                     versao.setDescricaoModificacoes(descricao);
-                    versao.setDetalhesFeature(detalhesFeature);
-                    versao.setArquivoCsv(caminhoArquivo);
+                    versao.setFeatures(listaFeatures);
+                    versao.setArquivoCsv(fileName);
                     versao.setNivelMaturidade(1);
                     versao.setDataRegistro(new java.sql.Date(System.currentTimeMillis()));
                     versao.setHoraRegistro(new java.sql.Time(System.currentTimeMillis()));

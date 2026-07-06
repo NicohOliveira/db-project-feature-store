@@ -9,7 +9,9 @@ function CadastroVersao() {
 
     const [versaoBase, setVersaoBase] = useState(null);
     const [descricao, setDescricao] = useState("");
-    const [detalhesFeature, setDetalhesFeature] = useState("");
+
+    const [features, setFeatures] = useState([]);
+
     const [arquivo, setArquivo] = useState(null);
     const [carregando, setCarregando] = useState(true);
     const [erro, setErro] = useState(null);
@@ -39,6 +41,21 @@ function CadastroVersao() {
             });
     }, [idData, idVers]);
 
+    const handleAddFeature = () => {
+        setFeatures([...features, { nomeColuna: "", tipoDado: "", descricao: "" }]);
+    };
+
+    const handleRemoveFeature = (index) => {
+        const novasFeatures = features.filter((_, i) => i !== index);
+        setFeatures(novasFeatures);
+    };
+
+    const handleFeatureChange = (index, campo, valor) => {
+        const novasFeatures = [...features];
+        novasFeatures[index][campo] = valor;
+        setFeatures(novasFeatures);
+    };
+
     const handleSalvar = async (e) => {
         e.preventDefault();
 
@@ -48,10 +65,13 @@ function CadastroVersao() {
             dados.append("id_dataset", idData);
             dados.append("num_versao_base", idVers);
             dados.append("descricao_modificacoes", descricao);
-            dados.append("detalhes_feature", detalhesFeature);
-            
+
+            dados.append("features", JSON.stringify(features));
+
             if (arquivo) dados.append("arquivo", arquivo);
-            
+
+            console.log(">>> ENVIANDO PRO JAVA:", JSON.stringify(features));
+
             const username = localStorage.getItem("username");
             if (!username) {
                 setMensagem("Usuário não autenticado.");
@@ -69,6 +89,7 @@ function CadastroVersao() {
 
             if (response.ok && data.status === "ok") {
                 setMensagem("Versão criada com sucesso.");
+                setTimeout(() => navigate(`/dataset/${idData}`), 1500); // Volta pro histórico após criar
             } else {
                 alert("Erro: " + data.mensagem);
             }
@@ -82,12 +103,12 @@ function CadastroVersao() {
     if (erro) return <p style={{ color: "red" }}>{erro}</p>;
 
     return (
-        <div className="d-flex vh-100 justify-content-center align-items-center" style={{ background: "#1a1a1a" }}>
-            <div className="card shadow p-4 border-0" style={{ width: "100%", maxWidth: "600px", background: "#222222" }}>
+        <div className="d-flex min-vh-100 justify-content-center align-items-center py-5" style={{ background: "#1a1a1a" }}>
+            <div className="card shadow p-4 border-0" style={{ width: "100%", maxWidth: "800px", background: "#222222" }}>
                 <div className="d-flex justify-content-between align-items-center mb-4">
-                    <Link to="/dashboard" className="btn btn-outline-secondary btn-sm">
+                    <button onClick={() => navigate(-1)} className="btn btn-outline-secondary btn-sm">
                         Voltar
-                    </Link>
+                    </button>
                 </div>
 
                 <h3 className="mb-1" style={{ color: "#e0e0e0" }}>Nova Versão</h3>
@@ -113,22 +134,42 @@ function CadastroVersao() {
                             rows={2}
                             value={descricao}
                             onChange={(e) => setDescricao(e.target.value)}
-                            placeholder="Foi modificado o sabor das batatas, bem como outros ingredientes..."
+                            placeholder="Descreva o que mudou nesta versão..."
                             style={{ background: "#2e2e2e", border: "1px solid #444", color: "#e0e0e0" }}
                         />
                     </div>
 
-                    <div className="mb-3">
-                        <label className="form-label fw-bold" style={{ color: "#e0e0e0" }}>Detalhes da Feature</label>
-                        <input
-                            type="text"
-                            className="form-control"
-                            value={detalhesFeature}
-                            onChange={(e) => setDetalhesFeature(e.target.value)}
-                            placeholder="Coluninhas, batatas..."
-                            style={{ background: "#2e2e2e", border: "1px solid #444", color: "#e0e0e0" }}
-                        />
+                    {/* --- SESSÃO DINÂMICA DAS FEATURES --- */}
+                    <div className="mb-4 p-3 rounded" style={{ background: "#1e1e1e", border: "1px solid #333" }}>
+                        <div className="d-flex justify-content-between align-items-center mb-3">
+                            <label className="form-label fw-bold mb-0" style={{ color: "#e0e0e0" }}>Mapeamento de Features (Opcional)</label>
+                            <button type="button" className="btn btn-sm btn-outline-info fw-bold" onClick={handleAddFeature}>
+                                + Adicionar Coluna
+                            </button>
+                        </div>
+
+                        {features.length === 0 && (
+                            <p className="text-secondary small mb-0">Nenhuma feature detalhada. Clique no botão acima para adicionar.</p>
+                        )}
+
+                        {features.map((feat, index) => (
+                            <div key={index} className="row g-2 mb-2 align-items-center">
+                                <div className="col-md-3">
+                                    <input type="text" className="form-control form-control-sm" placeholder="Nome da Coluna" value={feat.nomeColuna} onChange={(e) => handleFeatureChange(index, "nomeColuna", e.target.value)} style={{ background: "#2e2e2e", border: "1px solid #444", color: "#e0e0e0" }} required />
+                                </div>
+                                <div className="col-md-3">
+                                    <input type="text" className="form-control form-control-sm" placeholder="Tipo (ex: INT, VARCHAR)" value={feat.tipoDado} onChange={(e) => handleFeatureChange(index, "tipoDado", e.target.value)} style={{ background: "#2e2e2e", border: "1px solid #444", color: "#e0e0e0" }} />
+                                </div>
+                                <div className="col-md-5">
+                                    <input type="text" className="form-control form-control-sm" placeholder="Descrição" value={feat.descricao} onChange={(e) => handleFeatureChange(index, "descricao", e.target.value)} style={{ background: "#2e2e2e", border: "1px solid #444", color: "#e0e0e0" }} />
+                                </div>
+                                <div className="col-md-1 text-end">
+                                    <button type="button" className="btn btn-sm btn-outline-danger" onClick={() => handleRemoveFeature(index)}>X</button>
+                                </div>
+                            </div>
+                        ))}
                     </div>
+                    {/* ------------------------------------ */}
 
                     <div className="mb-4">
                         <label className="form-label fw-bold" style={{ color: "#e0e0e0" }}>Arquivo CSV</label>
