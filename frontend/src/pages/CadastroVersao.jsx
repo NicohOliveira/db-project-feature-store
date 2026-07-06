@@ -3,14 +3,16 @@ import { useNavigate, useParams, Link } from "react-router-dom";
 
 function CadastroVersao() {
     const { idData, idVers } = useParams();
+    
     const navigate = useNavigate();
-
+    
     const [mensagem, setMensagem] = useState("");
-
+    
     const [versaoBase, setVersaoBase] = useState(null);
     const [descricao, setDescricao] = useState("");
-
+    
     const [features, setFeatures] = useState([]);
+    const [fontes, setFontes] = useState([]);
 
     const [arquivo, setArquivo] = useState(null);
     const [carregando, setCarregando] = useState(true);
@@ -45,10 +47,19 @@ function CadastroVersao() {
         setFeatures([...features, { nomeColuna: "", tipoDado: "", descricao: "" }]);
     };
 
+    const handleAddFonte = () => {
+        setFontes([...fontes, { nome: "" }]);
+    };
+
     const handleRemoveFeature = (index) => {
         const novasFeatures = features.filter((_, i) => i !== index);
         setFeatures(novasFeatures);
     };
+
+    const handleRemoveFonte = (index) => {
+        const novasFontes = fontes.filter((_, i) => i !== index);
+        setFontes(novasFontes);
+    }
 
     const handleFeatureChange = (index, campo, valor) => {
         const novasFeatures = [...features];
@@ -56,19 +67,25 @@ function CadastroVersao() {
         setFeatures(novasFeatures);
     };
 
+    const handleFonteChange = (index, campo, valor) => {
+        const novasFontes = [...fontes];
+        novasFontes[index][campo] = valor;
+        setFontes(novasFontes);
+    };
+
     const handleSalvar = async (e) => {
         e.preventDefault();
 
         try {
-            const dados = new FormData();
+            const dadosVers = new FormData();
 
-            dados.append("id_dataset", idData);
-            dados.append("num_versao_base", idVers);
-            dados.append("descricao_modificacoes", descricao);
+            dadosVers.append("id_dataset", idData);
+            dadosVers.append("num_versao_base", idVers);
+            dadosVers.append("descricao_modificacoes", descricao);
 
-            dados.append("features", JSON.stringify(features));
+            dadosVers.append("features", JSON.stringify(features));
 
-            if (arquivo) dados.append("arquivo", arquivo);
+            if (arquivo) dadosVers.append("arquivo", arquivo);
 
             console.log(">>> ENVIANDO PRO JAVA:", JSON.stringify(features));
 
@@ -77,21 +94,41 @@ function CadastroVersao() {
                 setMensagem("Usuário não autenticado.");
                 return;
             }
-            dados.append("username_autor", username);
+            dadosVers.append("username_autor", username);
 
-            const response = await fetch("http://localhost:8080/backend/versao/create", {
+            const responseVers = await fetch("http://localhost:8080/backend/versao/create", {
                 method: "POST",
                 credentials: "include",
-                body: dados
+                body: dadosVers
             });
 
-            const data = await response.json();
+            const dataVers = await responseVers.json();
 
-            if (response.ok && data.status === "ok") {
+            if (dataVers.status !== "ok") {
+                throw new Error(dataVers.mensagem || "Erro ao criar versão.");
+            }
+
+            const dadosFonte = new URLSearchParams();
+
+            dadosFonte.append("datasetId", idData);
+            dadosFonte.append("versao", dataVers.numVersao);
+
+            fontes.forEach(f => { dadosFonte.append("fontes", f.nome); });
+
+            const responseFonte = await fetch("http://localhost:8080/backend/source/create", {
+                method: "POST",
+                credentials: "include",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: dadosFonte.toString()
+            });
+
+            const dataFonte = await responseFonte.json();
+
+            if (dataFonte.status === "ok") {
                 setMensagem("Versão criada com sucesso.");
                 setTimeout(() => navigate(`/dataset/${idData}`), 1500); // Volta pro histórico após criar
             } else {
-                alert("Erro: " + data.mensagem);
+                alert("Erro: " + dataFonte.mensagem);
             }
         } catch (error) {
             console.error("Erro na requisição:", error);
@@ -181,6 +218,30 @@ function CadastroVersao() {
                             required
                             style={{ background: "#2e2e2e", border: "1px solid #444", color: "#e0e0e0" }}
                         />
+                    </div>
+
+                    <div className="mb-4 p-3 rounded" style={{ background: "#1e1e1e", border: "1px solid #333" }}>
+                        <div className="d-flex justify-content-between align-items-center mb-3">
+                            <label className="form-label fw-bold mb-0" style={{ color: "#e0e0e0" }}>Associação de fontes</label>
+                            <button type="button" className="btn btn-sm btn-outline-info fw-bold" onClick={handleAddFonte}>
+                                + Adicionar fonte
+                            </button>
+                        </div>
+
+                        {fontes.length === 0 && (
+                            <p className="text-secondary small mb-0">Nenhuma fonte adicionada.</p>
+                        )}
+
+                        {fontes.map((fonte, index) => (
+                            <div key={index} className="row g-2 mb-2 align-items-center">
+                                <div className="col">
+                                    <input type="text" className="form-control form-control-sm" placeholder="Ex: IBGE, Wikipedia.com, hyperlink, etc" value={fonte.nome} onChange={(e) => handleFonteChange(index, "nome", e.target.value)} style={{ background: "#2e2e2e", border: "1px solid #444", color: "#e0e0e0" }} required />
+                                </div>
+                                <div className="col-md-1 text-end">
+                                    <button type="button" className="btn btn-sm btn-outline-danger" onClick={() => handleRemoveFonte(index)}>X</button>
+                                </div>
+                            </div>
+                        ))}
                     </div>
 
                     <button type="submit" className="btn btn-success w-100 fw-bold fs-5 py-2">

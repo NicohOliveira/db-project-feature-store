@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useResolvedPath } from "react-router-dom";
 
 
 function HistoricoLinhagem({ id }) {
@@ -11,6 +11,9 @@ function HistoricoLinhagem({ id }) {
     const [carregando, setCarregando] = useState(true);
     const [erro, setErro] = useState(null);
     
+    const [fontes, setFontes] = useState([]);
+    const [fonte, setFonte] = useState("");
+
     // estado para controlar qual versão tá expandida (aberta)
     const [versaoExpandida, setVersaoExpandida] = useState(null);
 
@@ -33,9 +36,38 @@ function HistoricoLinhagem({ id }) {
                 if (!res.ok) throw new Error("Erro ao buscar histórico.");
                 return res.json();
             })
-            .then((data) => {
+            .then(async (data) => {
                 if (data && data.length > 0) {
-                    setVersoes(data.reverse());
+                    const listaVersoes = data.reverse(); 
+                    
+                    const resultadoFinal = [];
+
+                    for (const versao of listaVersoes) {
+                        try {
+                            const resFonte = await fetch(
+                                `http://localhost:8080/backend/source?id_dataset=${id}&numVersao=${versao.numVersao}`, 
+                                { method: "GET", credentials: "include" }
+                            );
+                            
+                            const fontesDaVersao = resFonte.ok ? await resFonte.json() : [];
+                            
+                            resultadoFinal.push({
+                                ...versao,
+                                fontes: fontesDaVersao
+                            });
+                        } catch (e) {
+                            console.error(`Erro ao buscar fontes da versão ${versao.numVersao}:`, e);
+                            resultadoFinal.push({ ...versao, fontes: [] });
+                        }
+                    }
+
+                    return resultadoFinal;
+                }
+                return [];
+            })
+            .then((resultadoFinal) => {
+                if (resultadoFinal.length > 0) {
+                    setVersoes(resultadoFinal);
                 }
                 setCarregando(false);
             })
@@ -222,6 +254,23 @@ function HistoricoLinhagem({ id }) {
                                                     ) : (
                                                         <p className="mb-0 text-secondary" style={{ fontStyle: "italic", fontSize: "14px" }}>
                                                             Nenhum detalhe de feature informado.
+                                                        </p>
+                                                    )}
+                                                </div>
+
+                                                <br/>
+
+                                                <div className="mt-2">
+                                                    <h6 className="text-secondary text-uppercase" style={{ fontSize: "11px" }}>Fontes</h6>
+                                                    {versao.fontes && versao.fontes.length > 0 ? (
+                                                        versao.fontes.map((f, idx) => (
+                                                            <span key={idx} className="badge bg-secondary me-2">
+                                                                {f.fonte}
+                                                            </span>
+                                                        ))
+                                                    ) : (
+                                                        <p className="mb-0 text-secondary" style={{ fontStyle: "italic", fontSize: "14px" }}>
+                                                            Nenhuma fonte associada.
                                                         </p>
                                                     )}
                                                 </div>
