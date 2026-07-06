@@ -3,20 +3,22 @@ import { useNavigate, useParams, Link } from "react-router-dom";
 
 function CadastroVersao() {
     const { idData, idVers } = useParams();
-    
+
     const navigate = useNavigate();
-    
+
     const [mensagem, setMensagem] = useState("");
-    
+
     const [versaoBase, setVersaoBase] = useState(null);
     const [descricao, setDescricao] = useState("");
-    
+
     const [features, setFeatures] = useState([]);
     const [fontes, setFontes] = useState([]);
 
     const [arquivo, setArquivo] = useState(null);
     const [carregando, setCarregando] = useState(true);
     const [erro, setErro] = useState(null);
+
+    const [nivelMaturidade, setNivelMaturidade] = useState(1)
 
     useEffect(() => {
         if (idVers === "0") {
@@ -77,15 +79,16 @@ function CadastroVersao() {
         e.preventDefault();
 
         try {
-            const dadosVers = new FormData();
+            const dados = new FormData();
 
-            dadosVers.append("id_dataset", idData);
-            dadosVers.append("num_versao_base", idVers);
-            dadosVers.append("descricao_modificacoes", descricao);
+            dados.append("id_dataset", idData);
+            dados.append("num_versao_base", idVers);
+            dados.append("descricao_modificacoes", descricao);
+            dados.append("nivel_maturidade", nivelMaturidade);
 
-            dadosVers.append("features", JSON.stringify(features));
+            dados.append("features", JSON.stringify(features));
 
-            if (arquivo) dadosVers.append("arquivo", arquivo);
+            if (arquivo) dados.append("arquivo", arquivo);
 
             console.log(">>> ENVIANDO PRO JAVA:", JSON.stringify(features));
 
@@ -94,41 +97,21 @@ function CadastroVersao() {
                 setMensagem("Usuário não autenticado.");
                 return;
             }
-            dadosVers.append("username_autor", username);
+            dados.append("username_autor", username);
 
-            const responseVers = await fetch("http://localhost:8080/backend/versao/create", {
+            const response = await fetch("http://localhost:8080/backend/versao/create", {
                 method: "POST",
                 credentials: "include",
-                body: dadosVers
+                body: dados
             });
 
-            const dataVers = await responseVers.json();
+            const data = await response.json();
 
-            if (dataVers.status !== "ok") {
-                throw new Error(dataVers.mensagem || "Erro ao criar versão.");
-            }
-
-            const dadosFonte = new URLSearchParams();
-
-            dadosFonte.append("datasetId", idData);
-            dadosFonte.append("versao", dataVers.numVersao);
-
-            fontes.forEach(f => { dadosFonte.append("fontes", f.nome); });
-
-            const responseFonte = await fetch("http://localhost:8080/backend/source/create", {
-                method: "POST",
-                credentials: "include",
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: dadosFonte.toString()
-            });
-
-            const dataFonte = await responseFonte.json();
-
-            if (dataFonte.status === "ok") {
+            if (response.ok && data.status === "ok") {
                 setMensagem("Versão criada com sucesso.");
                 setTimeout(() => navigate(`/dataset/${idData}`), 1500); // Volta pro histórico após criar
             } else {
-                alert("Erro: " + dataFonte.mensagem);
+                alert("Erro: " + data.mensagem);
             }
         } catch (error) {
             console.error("Erro na requisição:", error);
@@ -207,6 +190,35 @@ function CadastroVersao() {
                         ))}
                     </div>
                     {/* ------------------------------------ */}
+
+                    <div className="mb-4 p-3 rounded" style={{ background: "#1e1e1e", border: "1px solid #333" }}>
+                        <label className="form-label fw-bold mb-3" style={{ color: "#e0e0e0" }}>Nível de Maturidade do Dado</label>
+                        <div className="d-flex gap-4">
+                            <div className="form-check" style={{ cursor: "pointer" }} onClick={() => setNivelMaturidade(1)}>
+                                <input className="form-check-input" type="radio" name="maturidade" checked={nivelMaturidade === 1} readOnly />
+                                <label className="form-check-label fw-bold" style={{ cursor: "pointer" }}>
+                                    <span className="badge me-1" style={{ backgroundColor: "#CD7F32", color: "#fff" }}>Bronze</span>
+                                    <span className="text-secondary small">(Dado Bruto)</span>
+                                </label>
+                            </div>
+
+                            <div className="form-check" style={{ cursor: "pointer" }} onClick={() => setNivelMaturidade(2)}>
+                                <input className="form-check-input" type="radio" name="maturidade" checked={nivelMaturidade === 2} readOnly />
+                                <label className="form-check-label fw-bold" style={{ cursor: "pointer" }}>
+                                    <span className="badge me-1" style={{ backgroundColor: "#C0C0C0", color: "#000" }}>Prata</span>
+                                    <span className="text-secondary small">(Dado Limpo/Filtrado)</span>
+                                </label>
+                            </div>
+
+                            <div className="form-check" style={{ cursor: "pointer" }} onClick={() => setNivelMaturidade(3)}>
+                                <input className="form-check-input" type="radio" name="maturidade" checked={nivelMaturidade === 3} readOnly />
+                                <label className="form-check-label fw-bold" style={{ cursor: "pointer" }}>
+                                    <span className="badge me-1" style={{ backgroundColor: "#FFD700", color: "#000" }}>Ouro</span>
+                                    <span className="text-secondary small">(Dado Enriquecido/Agregado)</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
 
                     <div className="mb-4">
                         <label className="form-label fw-bold" style={{ color: "#e0e0e0" }}>Arquivo CSV</label>

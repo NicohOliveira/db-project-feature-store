@@ -271,7 +271,9 @@ public class VersaoController extends HttpServlet {
                     versao.setDescricaoModificacoes(descricao);
                     versao.setFeatures(listaFeatures);
                     versao.setArquivoCsv(fileName);
-                    versao.setNivelMaturidade(1);
+                    String maturidadeStr = request.getParameter("nivel_maturidade");
+                    int maturidade = (maturidadeStr != null && !maturidadeStr.isEmpty()) ? Integer.parseInt(maturidadeStr) : 1;
+                    versao.setNivelMaturidade(maturidade);
                     versao.setDataRegistro(new java.sql.Date(System.currentTimeMillis()));
                     versao.setHoraRegistro(new java.sql.Time(System.currentTimeMillis()));
 
