@@ -1,6 +1,7 @@
 
 
 
+
 DROP TABLE IF EXISTS Registro_Acesso CASCADE;
 DROP TABLE IF EXISTS Versao_Fontes CASCADE;
 DROP TABLE IF EXISTS Versao CASCADE;
@@ -79,3 +80,22 @@ CREATE TABLE Registro_Acesso (
 );
 
 ALTER TABLE Dataset ADD CONSTRAINT dataset_nome_unique UNIQUE (nome);
+
+
+ALTER TABLE Versao DROP COLUMN detalhes_feature;
+
+CREATE TABLE Feature (
+    id_dataset INT NOT NULL,
+    num_versao INT NOT NULL,
+    nome_coluna VARCHAR(50) NOT NULL,
+    tipo_dado VARCHAR(30),
+    descricao TEXT,
+    
+    PRIMARY KEY (id_dataset, num_versao, nome_coluna),
+    
+
+    FOREIGN KEY (id_dataset, num_versao) 
+        REFERENCES Versao(id_dataset, num_versao) 
+        ON DELETE CASCADE
+);
+
