@@ -105,7 +105,7 @@ public class PgFonteDAO implements FonteDAO {
                 fontes.add(v);
             }
         } catch (SQLException ex) {
-            Logger.getLogger(PgUserDAO.class.getName()).log(Level.SEVERE, "DAO", ex);
+            Logger.getLogger(PgFonteDAO.class.getName()).log(Level.SEVERE, "DAO", ex);
             throw new SQLException("Erro ao listar datasets.");
         }
 
@@ -129,7 +129,7 @@ public class PgFonteDAO implements FonteDAO {
                 fontes.add(v);
             }
         } catch (SQLException ex) {
-            Logger.getLogger(PgUserDAO.class.getName()).log(Level.SEVERE, "DAO", ex);
+            Logger.getLogger(PgFonteDAO.class.getName()).log(Level.SEVERE, "DAO", ex);
             throw new SQLException("Erro ao listar datasets.");
         }
 

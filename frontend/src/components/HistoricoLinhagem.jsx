@@ -3,6 +3,7 @@ import { useParams, useNavigate, useResolvedPath } from "react-router-dom";
 
 
 function HistoricoLinhagem({ id }) {
+    const usuarioLogado = localStorage.getItem("username");
 
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [versaoParaDeletar, setVersaoParaDeletar] = useState(null);
@@ -10,21 +11,9 @@ function HistoricoLinhagem({ id }) {
     const [versoes, setVersoes] = useState([]);
     const [carregando, setCarregando] = useState(true);
     const [erro, setErro] = useState(null);
-    
-    const [fontes, setFontes] = useState([]);
-    const [fonte, setFonte] = useState("");
-
-    // estado para controlar qual versão tá expandida (aberta)
     const [versaoExpandida, setVersaoExpandida] = useState(null);
-
     const [featuresExpandidas, setFeaturesExpandidas] = useState({});
-    const toggleFeatures = (numVersao) => {
-        setFeaturesExpandidas(prev => ({
-            ...prev,
-            [numVersao]: !prev[numVersao]
-        }));
-    };
-    
+
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -38,36 +27,7 @@ function HistoricoLinhagem({ id }) {
             })
             .then(async (data) => {
                 if (data && data.length > 0) {
-                    const listaVersoes = data.reverse(); 
-                    
-                    const resultadoFinal = [];
-
-                    for (const versao of listaVersoes) {
-                        try {
-                            const resFonte = await fetch(
-                                `http://localhost:8080/backend/source?id_dataset=${id}&numVersao=${versao.numVersao}`, 
-                                { method: "GET", credentials: "include" }
-                            );
-                            
-                            const fontesDaVersao = resFonte.ok ? await resFonte.json() : [];
-                            
-                            resultadoFinal.push({
-                                ...versao,
-                                fontes: fontesDaVersao
-                            });
-                        } catch (e) {
-                            console.error(`Erro ao buscar fontes da versão ${versao.numVersao}:`, e);
-                            resultadoFinal.push({ ...versao, fontes: [] });
-                        }
-                    }
-
-                    return resultadoFinal;
-                }
-                return [];
-            })
-            .then((resultadoFinal) => {
-                if (resultadoFinal.length > 0) {
-                    setVersoes(resultadoFinal);
+                    setVersoes(data.reverse());
                 }
                 setCarregando(false);
             })
@@ -93,6 +53,13 @@ function HistoricoLinhagem({ id }) {
             .catch(err => console.error("Falha silenciosa no tracking do front:", err));
     };
 
+    const toggleFeatures = (numVersao) => {
+        setFeaturesExpandidas((prev) => ({
+            ...prev,
+            [numVersao]: !prev[numVersao]
+        }));
+    };
+
     const toggleExpandir = (numVersao) => {
         setVersaoExpandida(versaoExpandida === numVersao ? null : numVersao);
     };
@@ -110,8 +77,19 @@ function HistoricoLinhagem({ id }) {
         }
     };
 
-    const deletarVersao = async () => {
+    const acionarExclusao = (versao) => {
+        setVersaoParaDeletar(versao);
+        setShowDeleteModal(true);
+    };
+
+    const confirmarExclusao = async () => {
+        if (!versaoParaDeletar || !password) {
+            alert("Por favor, digite sua senha.");
+            return;
+        }
+
         try {
+            console.log(`Deletando a versão: ${versaoParaDeletar.numVersao}`);
             const idComposto = `${id}-${versaoParaDeletar.numVersao}`;
 
             const response = await fetch(`http://localhost:8080/backend/versao/delete?id=${idComposto}&senha=${password}`, {
@@ -119,18 +97,30 @@ function HistoricoLinhagem({ id }) {
                 credentials: "include"
             });
 
-            if (response.ok) {
+            const dados = await response.json();
+
+            if (response.ok && dados.status !== "erro") {
                 alert("Versão excluída com sucesso!");
+
                 setShowDeleteModal(false);
+                setVersaoParaDeletar(null);
                 setPassword("");
-                window.location.reload();
+
+                // Pra nao precisar recarregar tudo
+                setVersoes((versoesAtuais) =>
+                    versoesAtuais.filter((v) => v.numVersao !== versaoParaDeletar.numVersao)
+                );
             } else {
-                const data = await response.json();
-                alert("Erro: " + data.mensagem);
+                alert("Erro: " + (dados.mensagem || "Senha incorreta ou falha no servidor."));
             }
+
         } catch (error) {
             alert("Erro ao conectar no servidor.");
         }
+    };
+
+    const handleVisualizar = (numVersao) => {
+        navigate(`/dataset/${id}/versao/${numVersao}`);
     };
 
     if (carregando) return <div className="container mt-5 text-light"><div className="spinner-border text-light" role="status"></div> Carregando histórico...</div>;
@@ -163,6 +153,7 @@ function HistoricoLinhagem({ id }) {
                                 className="list-group-item bg-dark text-light border-secondary p-0 mb-3 rounded"
                                 style={{ transition: "all 0.3s ease" }}
                             >
+                                <div className="d-flex justify-content-between align-items-center p-3">
 
                                 <div
                                     className="d-flex justify-content-between align-items-center p-3"
@@ -196,6 +187,28 @@ function HistoricoLinhagem({ id }) {
                                         </div>
                                     </div>
 
+                                    <div className="d-flex gap-2" onClick={(e) => e.stopPropagation()}>
+                                        <button
+                                            type="button"
+                                            className="btn btn-sm btn-outline-light d-flex align-items-center gap-1"
+                                            title="Visualizar"
+                                            onClick={() => handleVisualizar(versao.numVersao)}
+                                        >
+                                            <i className="bi bi-eye"></i> Visualizar
+                                        </button>
+
+                                        {usuarioLogado === versao.usernameAutor && (
+                                            <button
+                                                type="button"
+                                                className="btn btn-sm btn-outline-danger d-flex align-items-center gap-1"
+                                                title="Excluir"
+                                                onClick={() => acionarExclusao(versao)}
+                                            >
+                                                <i className="bi bi-trash"></i> Excluir
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
                                     <div className="text-secondary fw-bold fs-4">
                                         {isExpanded ? "-" : "+"}
                                     </div>
@@ -334,7 +347,7 @@ function HistoricoLinhagem({ id }) {
                            onChange={(e) => setPassword(e.target.value)}
                        />
                        <div className="d-flex gap-2">
-                           <button className="btn btn-danger w-100" onClick={deletarVersao}>Confirmar</button>
+                           <button className="btn btn-danger w-100" onClick={confirmarExclusao}>Confirmar</button>
                            <button className="btn btn-secondary w-100" onClick={() => setShowDeleteModal(false)}>Cancelar</button>
                        </div>
                    </div>

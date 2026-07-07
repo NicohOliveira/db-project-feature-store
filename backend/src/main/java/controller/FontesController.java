@@ -5,7 +5,6 @@
 package controller;
 
 import com.google.gson.Gson;
-import dao.DAO;
 import dao.DAOFactory;
 import dao.FonteDAO;
 
@@ -57,7 +56,7 @@ public class FontesController extends HttpServlet {
                     dao = daoFactory.getFonteDAO();
 
                     int datasetId  = Integer.parseInt(request.getParameter("id_dataset"));
-                    int num_versao = Integer.parseInt(request.getParameter("numVersao"));
+                    int num_versao = Integer.parseInt(request.getParameter("num_versao"));
 
                     List<VersaoFontes> fontes = dao.allDatasetVersionSources(datasetId, num_versao);
 

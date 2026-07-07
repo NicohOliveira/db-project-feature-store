@@ -84,7 +84,7 @@ public class PgDatasetDAO implements DatasetDAO {
                 dataset.setUsernameCriador(result.getString("username_criador"));
             }
         } catch (SQLException ex) {
-            Logger.getLogger(PgUserDAO.class.getName()).log(Level.SEVERE, "DAO", ex);
+            Logger.getLogger(PgDatasetDAO.class.getName()).log(Level.SEVERE, "DAO", ex);
             throw new SQLException("Erro ao buscar dataset.");
         }
 
@@ -108,7 +108,7 @@ public class PgDatasetDAO implements DatasetDAO {
                 datasets.add(d);
             }
         } catch (SQLException ex) {
-            Logger.getLogger(PgUserDAO.class.getName()).log(Level.SEVERE, "DAO", ex);
+            Logger.getLogger(PgDatasetDAO.class.getName()).log(Level.SEVERE, "DAO", ex);
             throw new SQLException("Erro ao listar datasets.");
         }
 
@@ -125,7 +125,7 @@ public class PgDatasetDAO implements DatasetDAO {
                 throw new SQLException("Erro ao editar: dataset não encontrado.");
             }
         } catch (SQLException ex) {
-            Logger.getLogger(PgUserDAO.class.getName()).log(Level.SEVERE, "DAO", ex);
+            Logger.getLogger(PgDatasetDAO.class.getName()).log(Level.SEVERE, "DAO", ex);
             throw new SQLException("Erro ao atualizar dataset: " + ex.getMessage());
         }
     }

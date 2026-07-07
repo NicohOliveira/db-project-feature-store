@@ -1,6 +1,7 @@
 import { useNavigate, Link, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import HistoricoLinhagem from "../components/HistoricoLinhagem";
+import DetalhesDatasetView from "../components/DetalhesDatasetView";
 
 function DetalhesDataset() {
     const { id } = useParams();
@@ -45,7 +46,7 @@ function DetalhesDataset() {
                 <div className="d-flex flex-row align-items-center justify-content-center gap-3 mb-4">
                     <div className="rounded-circle bg-primary d-flex justify-content-center align-items-center flex-shrink-0" style={{ width: "45px", height: "45px" }}>
                         <span className="fw-bold text-white fs-5">
-                            {usuarioLogado ? usuarioLogado.charAt(0).toUpperCase() : "?"}
+                            {usuarioLogado.charAt(0).toUpperCase()}
                         </span>
                     </div>
                     <div>
@@ -59,7 +60,7 @@ function DetalhesDataset() {
                     <li className="nav-item mb-2">
                         <button
                             className={`nav-link w-100 d-flex align-items-center gap-2 ${aba === "detalhes" ? "active" : ""}`}
-                            style={aba !== "detalhes" ? { color: "#aaa", background: "transparent", border: "none" } : { border: "none" }}
+                            style={aba !== "detalhes" ? { color: "#aaa" } : {}}
                             onClick={() => setAba("detalhes")}
                         >
                             <span style={{ width: "200px", textAlign: "left" }}>📊 Painel Analítico</span>
@@ -68,10 +69,10 @@ function DetalhesDataset() {
                     <li className="nav-item mb-2">
                         <button
                             className={`nav-link w-100 d-flex align-items-center gap-2 ${aba === "historico" ? "active" : ""}`}
-                            style={aba !== "historico" ? { color: "#aaa", background: "transparent", border: "none" } : { border: "none" }}
+                            style={aba !== "historico" ? { color: "#aaa" } : {}}
                             onClick={() => setAba("historico")}
                         >
-                            <span style={{ width: "200px", textAlign: "left" }}>📜 Histórico de Versões</span>
+                            <span style={{ width: "200px", textAlign: "center" }}>Histórico de Versões</span>
                         </button>
                     </li>
                 </ul>
@@ -83,124 +84,87 @@ function DetalhesDataset() {
             </div>
 
             <div className="flex-grow-1 p-5 overflow-auto" style={{ background: "#1a1a1a" }}>
-                {aba === "detalhes" && (
-                    <div>
-                        <h2 className="text-light mb-4">Métricas do Dataset</h2>
-
-                        {!estatisticas ? (
-                            <p style={{ color: "#888" }}>Carregando estatísticas...</p>
-                        ) : (
-                            <>
-                                <div className="row mb-5">
-                                    <div className="col-md-4">
-                                        <div className="card bg-dark border-secondary shadow-sm">
-                                            <div className="card-body text-center">
-                                                <h6 className="text-secondary text-uppercase fw-bold">Total de Versões</h6>
-                                                <h1 className="text-light display-5 mb-0">{estatisticas.totalVersoes || 0}</h1>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="col-md-4">
-                                        <div className="card bg-dark border-secondary shadow-sm">
-                                            <div className="card-body text-center">
-                                                <h6 className="text-secondary text-uppercase fw-bold">Visualizações</h6>
-                                                <h1 className="text-info display-5 mb-0">{estatisticas.visualizacoes || 0}</h1>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="col-md-4">
-                                        <div className="card bg-dark border-secondary shadow-sm">
-                                            <div className="card-body text-center">
-                                                <h6 className="text-secondary text-uppercase fw-bold">Downloads</h6>
-                                                <h1 className="text-success display-5 mb-0">{estatisticas.downloads || 0}</h1>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="card bg-dark border-secondary mb-5 shadow-sm">
-                                    <div className="card-body">
-                                        <h5 className="text-light mb-3">Taxa de Engajamento (Views vs Downloads)</h5>
-                                        {totalAcoes === 0 ? (
-                                            <p className="text-secondary mb-0">Nenhuma interação registrada ainda.</p>
-                                        ) : (
-                                            <>
-                                                <div className="progress" style={{ height: "30px", backgroundColor: "#333" }}>
-                                                    <div className="progress-bar bg-info fw-bold fs-6" role="progressbar" style={{ width: `${porcVis}%` }} title="Visualizações">
-                                                        {porcVis}% Views
-                                                    </div>
-                                                    <div className="progress-bar bg-success fw-bold fs-6" role="progressbar" style={{ width: `${porcDown}%` }} title="Downloads">
-                                                        {porcDown}% Downs
-                                                    </div>
-                                                </div>
-                                                <small className="text-secondary d-block mt-2">
-                                                    De todas as interações com este dataset, <strong>{porcDown}%</strong> resultaram em um download efetivo.
-                                                </small>
-                                            </>
-                                        )}
-                                    </div>
-                                </div>
-                                <div className="row">
-                                    <div className="col-md-12 mb-4">
-                                        <div className="card bg-dark border-secondary shadow-sm d-flex flex-column">
-                                            <div className="card-header border-secondary bg-transparent pt-3 pb-2">
-                                                <h5 className="text-light mb-0">🏆 Top Contribuidores Deste Dataset</h5>
-                                                <small className="text-secondary">Usuários que mais criaram versões.</small>
-                                            </div>
-
-                                            <div className="card-body p-0">
-                                                {estatisticas.contribuidores && estatisticas.contribuidores.length > 0 ? (
-                                                    <table className="table table-dark table-hover mb-0">
-                                                        <thead>
-                                                        <tr>
-                                                            <th className="px-4 py-3" style={{ width: "15%" }}>Posição</th>
-                                                            <th className="px-4 py-3">Usuário</th>
-                                                            <th className="px-4 py-3 text-center" style={{ width: "25%" }}>Versões Criadas</th>
-                                                        </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                        {estatisticas.contribuidores.map((user, index) => (
-                                                            <tr key={index}>
-                                                                <td className="px-4 py-3 text-secondary fw-bold">#{((pageContrib - 1) * 5) + index + 1}</td>
-                                                                <td className="px-4 py-3 fw-bold text-light">@{user.usuario}</td>
-                                                                <td className="px-4 py-3 text-center text-info fw-bold">{user.criacoes}</td>
-                                                            </tr>
-                                                        ))}
-                                                        </tbody>
-                                                    </table>
-                                                ) : (
-                                                    <p className="text-secondary p-4 mb-0 text-center">Nenhum contribuidor registrado.</p>
-                                                )}
-                                            </div>
-
-                                            <div className="card-footer border-secondary bg-transparent d-flex justify-content-between align-items-center py-3">
-                                                <button
-                                                    className="btn btn-sm btn-outline-secondary fw-bold"
-                                                    disabled={pageContrib === 1}
-                                                    onClick={() => setPageContrib(pageContrib - 1)}
-                                                >
-                                                    &laquo; Anterior
-                                                </button>
-                                                <small className="text-secondary">Página {pageContrib}</small>
-                                                <button
-                                                    className="btn btn-sm btn-outline-secondary fw-bold"
-                                                    disabled={!estatisticas.contribuidores || estatisticas.contribuidores.length < 5}
-                                                    onClick={() => setPageContrib(pageContrib + 1)}
-                                                >
-                                                    Próxima &raquo;
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </>
-                        )}
+            {aba === "detalhes" && (
+                <div className="d-flex flex-column gap-4">
+                    {/* 1. SEUS CARDS GERAIS DO DATASET */}
+                    <div className="row">
+                        <div className="col-md-4">
+                            <div className="card bg-dark border-secondary shadow-sm text-center p-3 h-100">
+                                <h6 className="text-secondary text-uppercase fw-bold" style={{ fontSize: "12px" }}>Total de Versões</h6>
+                                <h2 className="text-light mb-0">{estatisticas?.totalVersoes || 0}</h2>
+                            </div>
+                        </div>
+                        <div className="col-md-4">
+                            <div className="card bg-dark border-secondary shadow-sm text-center p-3 h-100">
+                                <h6 className="text-secondary text-uppercase fw-bold" style={{ fontSize: "12px" }}>Visualizações Totais</h6>
+                                <h2 className="text-info mb-0">{estatisticas?.visualizacoes || 0}</h2>
+                            </div>
+                        </div>
+                        <div className="col-md-4">
+                            <div className="card bg-dark border-secondary shadow-sm text-center p-3 h-100">
+                                <h6 className="text-secondary text-uppercase fw-bold" style={{ fontSize: "12px" }}>Downloads Totais</h6>
+                                <h2 className="text-success mb-0">{estatisticas?.downloads || 0}</h2>
+                            </div>
+                        </div>
                     </div>
-                )}
 
+                    {/* 2. O GRÁFICO DE LINHAS DO CAIO */}
+                    <div className="card bg-dark border-secondary shadow-sm">
+                        <div className="card-header border-secondary bg-transparent pt-3 pb-2">
+                            <h5 className="text-light mb-0">📈 Histórico de Acessos no Tempo</h5>
+                        </div>
+                        {/* Fundo claro no gráfico para os eixos ficarem visíveis */}
+                        <div className="card-body bg-light rounded-bottom p-2">
+                            <DetalhesDatasetView id={id} />
+                        </div>
+                    </div>
+
+                    {/* 3. SUA TABELA DE CONTRIBUIDORES */}
+                    <div className="card bg-dark border-secondary shadow-sm d-flex flex-column">
+                        <div className="card-header border-secondary bg-transparent pt-3 pb-2">
+                            <h5 className="text-light mb-0">🏆 Top Contribuidores Deste Dataset</h5>
+                            <small className="text-secondary">Usuários que mais criaram versões.</small>
+                        </div>
+                        <div className="card-body p-0">
+                            {estatisticas?.contribuidores && estatisticas.contribuidores.length > 0 ? (
+                                <table className="table table-dark table-hover mb-0">
+                                    <thead>
+                                    <tr>
+                                        <th className="px-4 py-3" style={{ width: "15%" }}>Posição</th>
+                                        <th className="px-4 py-3">Usuário</th>
+                                        <th className="px-4 py-3 text-center" style={{ width: "25%" }}>Versões Criadas</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {estatisticas.contribuidores.map((user, index) => (
+                                        <tr key={index}>
+                                            <td className="px-4 py-3 text-secondary fw-bold">#{((pageContrib - 1) * 5) + index + 1}</td>
+                                            <td className="px-4 py-3 fw-bold text-light">@{user.usuario}</td>
+                                            <td className="px-4 py-3 text-center text-info fw-bold">{user.criacoes}</td>
+                                        </tr>
+                                    ))}
+                                    </tbody>
+                                </table>
+                            ) : (
+                                <p className="text-secondary p-4 mb-0 text-center">Nenhum contribuidor registrado.</p>
+                            )}
+                        </div>
+                        <div className="card-footer border-secondary bg-transparent d-flex justify-content-between align-items-center py-3">
+                            <button className="btn btn-sm btn-outline-secondary fw-bold" disabled={pageContrib === 1} onClick={() => setPageContrib(pageContrib - 1)}>
+                                &laquo; Anterior
+                            </button>
+                            <small className="text-secondary">Página {pageContrib}</small>
+                            <button className="btn btn-sm btn-outline-secondary fw-bold" disabled={!estatisticas?.contribuidores || estatisticas.contribuidores.length < 5} onClick={() => setPageContrib(pageContrib + 1)}>
+                                Próxima &raquo;
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
                 {aba === "historico" && (
                     <HistoricoLinhagem id={id} />
                 )}
+
             </div>
         </div>
     );
