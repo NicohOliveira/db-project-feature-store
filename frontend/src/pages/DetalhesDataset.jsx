@@ -1,6 +1,7 @@
 import { useNavigate, Link, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import HistoricoLinhagem from "../components/HistoricoLinhagem";
+import DetalhesDatasetView from "../components/DetalhesDatasetView";
 
 function DetalhesDataset() {
     const { id } = useParams();
@@ -65,7 +66,7 @@ function DetalhesDataset() {
 
             <div className="flex-grow-1 p-5 overflow-auto" style={{ background: "#1a1a1a" }}>
                 {aba === "detalhes" && (
-                    <p style={{ color: "#888" }}>em construção...</p>
+                    <DetalhesDatasetView id={id} />
                 )}
                 {aba === "historico" && (
                     <HistoricoLinhagem id={id} />

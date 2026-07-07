@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import DetalhesVersaoView from "../components/DetalhesVersaoView";
 
 function DetalhesVersao() {
+    const usuarioLogado = localStorage.getItem("username");
+
     const { id, idVers } = useParams();
     const navigate = useNavigate();
 
@@ -16,6 +19,16 @@ function DetalhesVersao() {
     
     // Estado para controlar a expansão das linhas da tabela de features (se houverem muitas)
     const [verTodasFeatures, setVerTodasFeatures] = useState(false);
+
+    useEffect(() => {
+        fetch(`http://localhost:8080/backend/registry/create?id_dataset=${id}&num_versao=${idVers}&tipo_acao=VISUALIZACAO&username_leitor=${usuarioLogado}`, {
+            method: "POST",
+            credentials: "include",
+        })
+            .catch((err) => {
+                console.error("Erro ao registrar acesso:", err);
+            });
+    }, [id, idVers]);
 
     useEffect(() => {
         setCarregando(true);
@@ -223,6 +236,8 @@ function DetalhesVersao() {
                         </div>
 
                     </div>
+
+                    <DetalhesVersaoView id={id} numVersao={idVers} />
                 </div>
             </div>
 
