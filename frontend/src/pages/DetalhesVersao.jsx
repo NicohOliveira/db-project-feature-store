@@ -71,7 +71,16 @@ function DetalhesVersao() {
             });
     }, [id, idVers]);
 
-    const baixarArquivo = () => {
+    const baixarArquivo = async () => {
+        try {
+            await fetch(`http://localhost:8080/backend/registry/create?id_dataset=${id}&num_versao=${idVers}&tipo_acao=DOWNLOAD&username_leitor=${usuarioLogado}`, {
+                method: "POST",
+                credentials: "include",
+            });
+        } catch (err) {
+            console.error("Erro ao registrar download:", err);
+        }
+
         const urlDownload = `http://localhost:8080/backend/versao/download?id_dataset=${id}&num_versao=${idVers}`;
         window.open(urlDownload, "_blank");
     };
