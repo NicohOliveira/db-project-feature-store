@@ -132,7 +132,7 @@ function DetalhesVersao() {
                     </div>
 
                     <div className="d-flex align-items-center" style={{ gap: "30px" }}>
-                        <button className="btn btn-primary btn-sm" onClick={() => navigate(`/versao/create/${id}/${versao.idVers}`)}>
+                        <button className="btn btn-primary btn-sm" onClick={() => navigate(`/versao/create/${id}/${versao.numVersao}`)}>
                             Criar versão a partir desta
                         </button>
                                         
