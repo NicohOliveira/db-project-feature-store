@@ -2,6 +2,7 @@ dao\RegistroAcessoDAO.class
 controller\FontesController.class
 model\Versao.class
 controller\UserController.class
+dao\PgRelatorioDAO.class
 dao\PgUserDAO.class
 controller\VersaoController$1.class
 jdbc\ConnectionFactory.class
@@ -14,12 +15,14 @@ dao\DatasetDAO.class
 model\RegistroAcesso.class
 jdbc\PgConnectionFactory.class
 model\User.class
+controller\RelatorioController.class
 dao\DAO.class
 model\VersaoFontes.class
 dao\PgFonteDAO.class
 dao\PgRegistroAcessoDAO.class
 model\DadosAcesso.class
 dao\PgDatasetDAO.class
+dao\RelatorioDAO.class
 controller\VersaoController.class
 dao\PgVersaoDAO.class
 dao\DAOFactory.class

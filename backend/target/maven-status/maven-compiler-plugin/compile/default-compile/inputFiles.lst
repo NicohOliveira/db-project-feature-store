@@ -2,6 +2,7 @@ C:\Users\caios\Desktop\Códigos\Banco de Dados\trabalho-feature-store\db-project
 C:\Users\caios\Desktop\Códigos\Banco de Dados\trabalho-feature-store\db-project-feature-store\backend\src\main\java\controller\FontesController.java
 C:\Users\caios\Desktop\Códigos\Banco de Dados\trabalho-feature-store\db-project-feature-store\backend\src\main\java\controller\LoginController.java
 C:\Users\caios\Desktop\Códigos\Banco de Dados\trabalho-feature-store\db-project-feature-store\backend\src\main\java\controller\RegistroAcessoController.java
+C:\Users\caios\Desktop\Códigos\Banco de Dados\trabalho-feature-store\db-project-feature-store\backend\src\main\java\controller\RelatorioController.java
 C:\Users\caios\Desktop\Códigos\Banco de Dados\trabalho-feature-store\db-project-feature-store\backend\src\main\java\controller\UserController.java
 C:\Users\caios\Desktop\Códigos\Banco de Dados\trabalho-feature-store\db-project-feature-store\backend\src\main\java\controller\VersaoController.java
 C:\Users\caios\Desktop\Códigos\Banco de Dados\trabalho-feature-store\db-project-feature-store\backend\src\main\java\dao\DAO.java
@@ -12,9 +13,11 @@ C:\Users\caios\Desktop\Códigos\Banco de Dados\trabalho-feature-store\db-project
 C:\Users\caios\Desktop\Códigos\Banco de Dados\trabalho-feature-store\db-project-feature-store\backend\src\main\java\dao\PgDatasetDAO.java
 C:\Users\caios\Desktop\Códigos\Banco de Dados\trabalho-feature-store\db-project-feature-store\backend\src\main\java\dao\PgFonteDAO.java
 C:\Users\caios\Desktop\Códigos\Banco de Dados\trabalho-feature-store\db-project-feature-store\backend\src\main\java\dao\PgRegistroAcessoDAO.java
+C:\Users\caios\Desktop\Códigos\Banco de Dados\trabalho-feature-store\db-project-feature-store\backend\src\main\java\dao\PgRelatorioDAO.java
 C:\Users\caios\Desktop\Códigos\Banco de Dados\trabalho-feature-store\db-project-feature-store\backend\src\main\java\dao\PgUserDAO.java
 C:\Users\caios\Desktop\Códigos\Banco de Dados\trabalho-feature-store\db-project-feature-store\backend\src\main\java\dao\PgVersaoDAO.java
 C:\Users\caios\Desktop\Códigos\Banco de Dados\trabalho-feature-store\db-project-feature-store\backend\src\main\java\dao\RegistroAcessoDAO.java
+C:\Users\caios\Desktop\Códigos\Banco de Dados\trabalho-feature-store\db-project-feature-store\backend\src\main\java\dao\RelatorioDAO.java
 C:\Users\caios\Desktop\Códigos\Banco de Dados\trabalho-feature-store\db-project-feature-store\backend\src\main\java\dao\UserDAO.java
 C:\Users\caios\Desktop\Códigos\Banco de Dados\trabalho-feature-store\db-project-feature-store\backend\src\main\java\dao\VersaoDAO.java
 C:\Users\caios\Desktop\Códigos\Banco de Dados\trabalho-feature-store\db-project-feature-store\backend\src\main\java\filters\CorsFilter.java

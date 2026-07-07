@@ -40,6 +40,26 @@ public class PgRelatorioDAO implements RelatorioDAO {
             "SELECT username_autor, COUNT(*) as criacoes FROM Versao " +
                     "WHERE id_dataset = ? GROUP BY username_autor ORDER BY criacoes DESC LIMIT 5 OFFSET ?;";
 
+    private static final String GLOBAL_DATASET_INDIVIDUAL_DOWNLOADS_QUERY =
+            "SELECT d.nome AS nome_dataset, " +
+                        "COUNT(*) AS downloads " +
+                        "FROM registro_acesso r " +
+                        "JOIN dataset d ON r.id_dataset_acessada = d.id_dataset " +
+                        "WHERE tipo_acao = 'DOWNLOAD' " +
+                        "GROUP BY d.nome " +
+                        "ORDER BY downloads DESC " +
+                        "LIMIT 5;";
+
+    private static final String GLOBAL_DATASET_INDIVIDUAL_VIEWS_QUERY =
+            "SELECT d.nome AS nome_dataset, " +
+                        "COUNT(*) AS visualizacoes " +
+                        "FROM registro_acesso r " +
+                        "JOIN dataset d ON r.id_dataset_acessada = d.id_dataset " +
+                        "WHERE tipo_acao = 'VISUALIZACAO' " +
+                        "GROUP BY d.nome " +
+                        "ORDER BY visualizacoes DESC " +
+                        "LIMIT 5;";
+
     public PgRelatorioDAO(Connection connection) {
         this.connection = connection;
     }
@@ -71,12 +91,13 @@ public class PgRelatorioDAO implements RelatorioDAO {
                     else if ("DOWNLOAD".equals(rs.getString("tipo_acao"))) totalDown = rs.getInt("qtd");
                 }
             }
+
             stats.put("totalVisualizacoes", totalVis);
             stats.put("totalDownloads", totalDown);
 
             List<Map<String, Object>> contribuidoresGlobais = new ArrayList<>();
             try (PreparedStatement stmt = connection.prepareStatement(GLOBAL_CONTRIBUTORS_QUERY)) {
-                stmt.setInt(1, offsetContrib);
+                stmt.setInt(1, pageContrib);
                 try (ResultSet rs = stmt.executeQuery()) {
                     while (rs.next()) {
                         Map<String, Object> user = new HashMap<>();
@@ -87,6 +108,32 @@ public class PgRelatorioDAO implements RelatorioDAO {
                 }
             }
             stats.put("rankingContribuidoresGlobais", contribuidoresGlobais);
+
+            List<Map<String, Object>> downloads = new ArrayList<>();
+            try (PreparedStatement stmt = connection.prepareStatement(GLOBAL_DATASET_INDIVIDUAL_DOWNLOADS_QUERY)) {
+                try (ResultSet rs = stmt.executeQuery()) {
+                    while (rs.next()) {
+                        Map<String, Object> dataset = new HashMap<>();
+                        dataset.put("dataset", rs.getString("nome_dataset"));
+                        dataset.put("downloads", rs.getInt("downloads"));
+                        downloads.add(dataset);
+                    }
+                }
+            }
+            stats.put("downloadsDatasets", downloads);
+
+            List<Map<String, Object>> views = new ArrayList<>();
+            try (PreparedStatement stmt = connection.prepareStatement(GLOBAL_DATASET_INDIVIDUAL_VIEWS_QUERY)) {
+                try (ResultSet rs = stmt.executeQuery()) {
+                    while (rs.next()) {
+                        Map<String, Object> dataset = new HashMap<>();
+                        dataset.put("dataset", rs.getString("nome_dataset"));
+                        dataset.put("visualizacoes", rs.getInt("visualizacoes"));
+                        views.add(dataset);
+                    }
+                }
+            }
+            stats.put("viewsDatasets", views);
 
         } catch (SQLException ex) {
             Logger.getLogger(PgRelatorioDAO.class.getName()).log(Level.SEVERE, "DAO", ex);
