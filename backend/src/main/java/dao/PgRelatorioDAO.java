@@ -60,6 +60,25 @@ public class PgRelatorioDAO implements RelatorioDAO {
                         "ORDER BY visualizacoes DESC " +
                         "LIMIT 5;";
 
+    private static final String DATASET_MATURITY_QUERY =
+            "SELECT nivel_maturidade, COUNT(*) as qtd " +
+                    "FROM Versao " +
+                    "WHERE id_dataset = ? " +
+                    "GROUP BY nivel_maturidade;";
+
+    private static final String GLOBAL_MATURITY_QUERY =
+            "SELECT nivel_maturidade, COUNT(*) as qtd " +
+                    "FROM Versao GROUP BY nivel_maturidade;";
+
+    private static final String TOP_GOLD_DATASETS_QUERY =
+            "SELECT d.nome AS nome_dataset, COUNT(v.id_dataset) as qtd_ouro " +
+                    "FROM Dataset d " +
+                    "INNER JOIN Versao v ON d.id_dataset = v.id_dataset " +
+                    "WHERE v.nivel_maturidade = 3 " +
+                    "GROUP BY d.nome " +
+                    "ORDER BY qtd_ouro DESC " +
+                    "LIMIT 5;";
+
     public PgRelatorioDAO(Connection connection) {
         this.connection = connection;
     }
@@ -97,7 +116,7 @@ public class PgRelatorioDAO implements RelatorioDAO {
 
             List<Map<String, Object>> contribuidoresGlobais = new ArrayList<>();
             try (PreparedStatement stmt = connection.prepareStatement(GLOBAL_CONTRIBUTORS_QUERY)) {
-                stmt.setInt(1, pageContrib);
+                stmt.setInt(1, offsetContrib);
                 try (ResultSet rs = stmt.executeQuery()) {
                     while (rs.next()) {
                         Map<String, Object> user = new HashMap<>();
@@ -134,6 +153,32 @@ public class PgRelatorioDAO implements RelatorioDAO {
                 }
             }
             stats.put("viewsDatasets", views);
+
+            List<Map<String, Object>> maturidadeGlobal = new ArrayList<>();
+            try (PreparedStatement stmt = connection.prepareStatement(GLOBAL_MATURITY_QUERY)) {
+                try (ResultSet rs = stmt.executeQuery()) {
+                    while (rs.next()) {
+                        Map<String, Object> mat = new HashMap<>();
+                        mat.put("nivel", rs.getInt("nivel_maturidade"));
+                        mat.put("quantidade", rs.getInt("qtd"));
+                        maturidadeGlobal.add(mat);
+                    }
+                }
+            }
+            stats.put("distribuicaoMaturidadeGlobal", maturidadeGlobal);
+
+            List<Map<String, Object>> topOuro = new ArrayList<>();
+            try (PreparedStatement stmt = connection.prepareStatement(TOP_GOLD_DATASETS_QUERY)) {
+                try (ResultSet rs = stmt.executeQuery()) {
+                    while (rs.next()) {
+                        Map<String, Object> datasetOuro = new HashMap<>();
+                        datasetOuro.put("dataset", rs.getString("nome_dataset"));
+                        datasetOuro.put("qtdOuro", rs.getInt("qtd_ouro"));
+                        topOuro.add(datasetOuro);
+                    }
+                }
+            }
+            stats.put("topDatasetsOuro", topOuro);
 
         } catch (SQLException ex) {
             Logger.getLogger(PgRelatorioDAO.class.getName()).log(Level.SEVERE, "DAO", ex);
@@ -185,10 +230,26 @@ public class PgRelatorioDAO implements RelatorioDAO {
             }
             stats.put("contribuidores", contribuidores);
 
+            List<Map<String, Object>> maturidadeDist = new ArrayList<>();
+            try (PreparedStatement stmt = connection.prepareStatement(DATASET_MATURITY_QUERY)) {
+                stmt.setInt(1, idDataset);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    while (rs.next()) {
+                        Map<String, Object> mat = new HashMap<>();
+                        mat.put("nivel", rs.getInt("nivel_maturidade"));
+                        mat.put("quantidade", rs.getInt("qtd"));
+                        maturidadeDist.add(mat);
+                    }
+                }
+            }
+            stats.put("distribuicaoMaturidade", maturidadeDist);
+
         } catch (SQLException ex) {
             Logger.getLogger(PgRelatorioDAO.class.getName()).log(Level.SEVERE, "DAO", ex);
             throw new SQLException("Erro ao gerar estatísticas específicas do dataset.");
         }
+
+
         return stats;
     }
 

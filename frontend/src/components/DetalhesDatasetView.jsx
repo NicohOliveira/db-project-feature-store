@@ -1,17 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, useResolvedPath } from "react-router-dom";
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography'; // <-- Adicionado para o novo Tooltip
+import Typography from '@mui/material/Typography';
 import { LineChart, lineClasses } from '@mui/x-charts/LineChart';
 import { labelMarkClasses } from '@mui/x-charts/ChartsLabel';
+import MaturidadeChart from "./MaturidadeChart";
 
 import EvolucaoAcessosChart from "./EvolucaoAcessosChart";
 import VersoesAcessosChart from "./VersoesAcessosChart";
 
-function DetalhesDatasetView({ id, nome }) {
+function DetalhesDatasetView({ id, nome, estatisticas }) {
     const [registros, setRegistros] = useState([]);
     const [views, setViews] = useState([]);
     const [downloads, setDownloads] = useState([]);
+    const [maturidade, setMaturidade] = useState([]);
 
     const [carregando, setCarregando] = useState(true);
     const [erro, setErro] = useState(null);
@@ -90,6 +92,18 @@ function DetalhesDatasetView({ id, nome }) {
                 </h5>
                 <EvolucaoAcessosChart dadosBanco={registros} />
             </Box>
+
+            <div className="card bg-dark border-secondary shadow-sm mt-2">
+                <div className="card-header border-secondary bg-transparent pt-3 pb-2">
+                    <h5 className="text-light mb-0">Níveis de Maturidade</h5>
+                    <small className="text-secondary">Distribuição da qualidade das versões deste dataset.</small>
+                </div>
+                <div className="card-body d-flex justify-content-center">
+                    <Box sx={{ width: "50%", minWidth: "350px" }}>
+                        <MaturidadeChart dadosBanco={estatisticas?.distribuicaoMaturidade || []} />
+                    </Box>
+                </div>
+            </div>
         </div>
     );
 }

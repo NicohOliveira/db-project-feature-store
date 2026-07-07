@@ -1,3 +1,4 @@
+
 -- 1.1 Total de Datasets e Versões no sistema
 SELECT COUNT(*) as total_datasets FROM Dataset;
 SELECT COUNT(*) as total_versoes FROM Versao;
@@ -50,3 +51,29 @@ WHERE id_dataset_acessada = 20
 GROUP BY num_versao_acessada 
 ORDER BY interacoes DESC 
 LIMIT 5;
+
+--3 testes de maturidade
+
+--3.1 maturidade de dataset
+
+SELECT nivel_maturidade, COUNT(*) as qtd 
+FROM Versao 
+WHERE id_dataset = 20
+GROUP BY nivel_maturidade;
+
+--3.2 maturidade global
+
+SELECT nivel_maturidade, COUNT(*) as qtd 
+FROM Versao 
+GROUP BY nivel_maturidade;
+
+--3.3 datasets com mais versão nivel 3/ouro
+
+SELECT d.nome, COUNT(v.num_versao) as qtd_ouro 
+FROM Dataset d 
+INNER JOIN Versao v ON d.id_dataset = v.id_dataset 
+WHERE v.nivel_maturidade = 3 
+GROUP BY d.nome 
+ORDER BY qtd_ouro DESC 
+LIMIT 5;
+

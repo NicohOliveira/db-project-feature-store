@@ -107,7 +107,7 @@ function DetalhesDataset() {
                         </div>
                     </div>
 
-                    <DetalhesDatasetView id={id} />
+                    <DetalhesDatasetView id={id} estatisticas={estatisticas} />
 
                     <div className="card bg-dark border-secondary shadow-sm d-flex flex-column">
                         <div className="card-header border-secondary bg-transparent pt-3 pb-2">

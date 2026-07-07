@@ -2,6 +2,7 @@ import React from "react";
 
 import VersoesAcessosChart from "./VersoesAcessosChart";
 import Box from '@mui/material/Box';
+import MaturidadeChart from "./MaturidadeChart";
 
 function VisaoGlobal({ estatisticas, pageContrib, setPageContrib, datasets }) {
     if (!estatisticas) {
@@ -107,6 +108,57 @@ function VisaoGlobal({ estatisticas, pageContrib, setPageContrib, datasets }) {
                     )}
                 </div>
             </div>
+            <div className="row mb-4">
+                <div className="col-md-6 d-flex">
+                    <div className="card bg-dark border-secondary shadow-sm w-100">
+                        <div className="card-header border-secondary bg-transparent pt-3 pb-2">
+                            <h5 className="text-light mb-0">Qualidade do Acervo Global</h5>
+                            <small className="text-secondary">Proporção de níveis de maturidade em toda a plataforma.</small>
+                        </div>
+                        <div className="card-body d-flex justify-content-center align-items-center">
+                            <Box sx={{ width: "100%", minWidth: "300px" }}>
+                                <MaturidadeChart dadosBanco={estatisticas.distribuicaoMaturidadeGlobal || []} />
+                            </Box>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="col-md-6 d-flex">
+                    <div className="card bg-dark border-secondary shadow-sm w-100 d-flex flex-column">
+                        <div className="card-header border-secondary bg-transparent pt-3 pb-2">
+                            <h5 className="text-light mb-0">🏆 Datasets de Excelência (Ouro)</h5>
+                            <small className="text-secondary">Datasets com o maior número de versões refinadas.</small>
+                        </div>
+                        <div className="card-body p-0 flex-grow-1">
+                            {estatisticas.topDatasetsOuro && estatisticas.topDatasetsOuro.length > 0 ? (
+                                <table className="table table-dark table-hover mb-0 h-100">
+                                    <thead>
+                                    <tr>
+                                        <th className="px-4 py-3" style={{ width: "15%" }}>#</th>
+                                        <th className="px-4 py-3">Dataset</th>
+                                        <th className="px-4 py-3 text-center" style={{ width: "30%" }}>Versões Ouro</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {estatisticas.topDatasetsOuro.map((item, index) => (
+                                        <tr key={index}>
+                                            <td className="px-4 py-3 text-secondary fw-bold">{index + 1}</td>
+                                            <td className="px-4 py-3 fw-bold text-light">{item.dataset}</td>
+                                            <td className="px-4 py-3 text-center text-warning fw-bold">{item.qtdOuro} ⭐</td>
+                                        </tr>
+                                    ))}
+                                    </tbody>
+                                </table>
+                            ) : (
+                                <div className="d-flex h-100 align-items-center justify-content-center">
+                                    <p className="text-secondary p-4 mb-0 text-center">Nenhum dataset Ouro encontrado.</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
 
             <div className="row">
                 <div className="col-md-12 mb-4">

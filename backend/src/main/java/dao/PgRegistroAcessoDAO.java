@@ -74,6 +74,7 @@ public class PgRegistroAcessoDAO implements RegistroAcessoDAO {
                     "GROUP BY num_versao_acessada " +
                     "ORDER BY downloads DESC;";
 
+
     // private static final String READ_QUERY =
     //         "SELECT * FROM Versao WHERE id_dataset = ? AND num_versao = ?;";
 
@@ -271,4 +272,6 @@ public class PgRegistroAcessoDAO implements RegistroAcessoDAO {
 
         return registros;
     }
+
+
 }

@@ -152,14 +152,22 @@ public class VersaoController extends HttpServlet {
                     }
 
                     int idDataset = Integer.parseInt(idDatasetStr);
+                    String texto = request.getParameter("texto");
+                    String maturidadeStr = request.getParameter("maturidade");
+                    String versaoBaseStr = request.getParameter("versaoBase");
+                    String dataInicioStr = request.getParameter("dataInicio");
+                    String dataFimStr = request.getParameter("dataFim");
+                    Integer maturidade = (maturidadeStr != null && !maturidadeStr.isEmpty()) ? Integer.parseInt(maturidadeStr) : null;
+                    Integer versaoBase = (versaoBaseStr != null && !versaoBaseStr.isEmpty()) ? Integer.parseInt(versaoBaseStr) : null;
+                    java.sql.Date dataInicio = (dataInicioStr != null && !dataInicioStr.isEmpty()) ? java.sql.Date.valueOf(dataInicioStr) : null;
+                    java.sql.Date dataFim = (dataFimStr != null && !dataFimStr.isEmpty()) ? java.sql.Date.valueOf(dataFimStr) : null;
 
                     try (DAOFactory daoFactory = DAOFactory.getInstance()) {
                         dao = daoFactory.getVersaoDAO();
-                        List<Versao> historico = dao.listByDataset(idDataset);
+                        List<Versao> historico = ((dao.PgVersaoDAO) dao).getHistoricoFiltrado(idDataset, texto, maturidade, versaoBase, dataInicio, dataFim);
 
                         Gson gson = new GsonBuilder().setDateFormat("dd/MM/yyyy").create();
                         response.getWriter().write(gson.toJson(historico));
-                    
                     }
                 } catch (Exception e) {
                     response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
@@ -167,7 +175,6 @@ public class VersaoController extends HttpServlet {
                 }
                 break;
             }
-
             case "/versao/download": {
                 try {
                     String idDatasetStr = request.getParameter("id_dataset");

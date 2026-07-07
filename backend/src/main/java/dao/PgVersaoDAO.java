@@ -44,6 +44,16 @@ public class PgVersaoDAO implements VersaoDAO {
     private static final String DELETE_QUERY =
             "DELETE FROM Versao WHERE id_dataset = ? AND num_versao = ? AND username_autor = ?;";
 
+    private static final String READ_HISTORY_FILTER_QUERY =
+            "SELECT * FROM Versao " +
+                    "WHERE id_dataset = ? " +
+                    "AND (?::varchar IS NULL OR UPPER(username_autor) LIKE UPPER(?) OR UPPER(descricao_modificacoes) LIKE UPPER(?)) " +
+                    "AND (?::integer IS NULL OR nivel_maturidade = ?) " +
+                    "AND (?::integer IS NULL OR num_versao_base = ?) " +
+                    "AND (?::date IS NULL OR data_registro >= ?) " +
+                    "AND (?::date IS NULL OR data_registro <= ?) " +
+                    "ORDER BY num_versao DESC;";
+
     public PgVersaoDAO(Connection connection) {
         this.connection = connection;
     }
@@ -87,7 +97,7 @@ public class PgVersaoDAO implements VersaoDAO {
                         stmtFeature.setString(4, f.getTipoDado());
                         stmtFeature.setString(5, f.getDescricao());
 
-                        stmtFeature.executeUpdate(); // <-- Mudamos de addBatch para executeUpdate direto
+                        stmtFeature.executeUpdate();
                         System.out.println(">>> [DAO] FEATURE '" + f.getNomeColuna() + "' INSERIDA COM SUCESSO!");
                     }
                 }
@@ -239,5 +249,83 @@ public class PgVersaoDAO implements VersaoDAO {
     @Override
     public List<Versao> all() throws SQLException {
         return new ArrayList<>();
+    }
+
+    /**
+     * Busca versões com filtros dinâmicos de texto, maturidade, versão base e datas.
+     */
+    public List<Versao> getHistoricoFiltrado(int idDataset, String texto, Integer maturidade, Integer versaoBase, java.sql.Date dataInicio, java.sql.Date dataFim) throws SQLException {
+        List<Versao> versoes = new ArrayList<>();
+
+
+        try (PreparedStatement stmt = connection.prepareStatement(READ_HISTORY_FILTER_QUERY)) {
+
+            stmt.setInt(1, idDataset);
+            if (texto != null && !texto.trim().isEmpty()) {
+                String termo = "%" + texto + "%";
+                stmt.setString(2, termo);
+                stmt.setString(3, termo);
+                stmt.setString(4, termo);
+            } else {
+                stmt.setNull(2, java.sql.Types.VARCHAR);
+                stmt.setNull(3, java.sql.Types.VARCHAR);
+                stmt.setNull(4, java.sql.Types.VARCHAR);
+            }
+
+            if (maturidade != null) {
+                stmt.setInt(5, maturidade);
+                stmt.setInt(6, maturidade);
+            } else {
+                stmt.setNull(5, java.sql.Types.INTEGER);
+                stmt.setNull(6, java.sql.Types.INTEGER);
+            }
+
+            if (versaoBase != null) {
+                stmt.setInt(7, versaoBase);
+                stmt.setInt(8, versaoBase);
+            } else {
+                stmt.setNull(7, java.sql.Types.INTEGER);
+                stmt.setNull(8, java.sql.Types.INTEGER);
+            }
+
+            if (dataInicio != null) {
+                stmt.setDate(9, dataInicio);
+                stmt.setDate(10, dataInicio);
+            } else {
+                stmt.setNull(9, java.sql.Types.DATE);
+                stmt.setNull(10, java.sql.Types.DATE);
+            }
+
+            if (dataFim != null) {
+                stmt.setDate(11, dataFim);
+                stmt.setDate(12, dataFim);
+            } else {
+                stmt.setNull(11, java.sql.Types.DATE);
+                stmt.setNull(12, java.sql.Types.DATE);
+            }
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Versao v = new Versao();
+                    v.setIdDataset(rs.getInt("id_dataset"));
+                    v.setNumVersao(rs.getInt("num_versao"));
+                    v.setArquivoCsv(rs.getString("arquivo_csv"));
+                    v.setNivelMaturidade(rs.getInt("nivel_maturidade"));
+                    v.setDataRegistro(rs.getDate("data_registro"));
+                    v.setHoraRegistro(rs.getTime("hora_registro"));
+                    v.setDescricaoModificacoes(rs.getString("descricao_modificacoes"));
+                    v.setUsernameAutor(rs.getString("username_autor"));
+                    v.setIdDatasetBase(rs.getInt("id_dataset_base"));
+                    v.setNumVersaoBase(rs.getInt("num_versao_base"));
+                    v.setFeatures(buscarFeatures(v.getIdDataset(), v.getNumVersao()));
+
+                    versoes.add(v);
+                }
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(PgVersaoDAO.class.getName()).log(Level.SEVERE, "Erro na busca filtrada", ex);
+            throw new SQLException("Erro ao buscar histórico com filtros: " + ex.getMessage());
+        }
+        return versoes;
     }
 }
