@@ -6,16 +6,20 @@ import { LineChart, lineClasses } from '@mui/x-charts/LineChart';
 import { labelMarkClasses } from '@mui/x-charts/ChartsLabel';
 
 import EvolucaoAcessosChart from "./EvolucaoAcessosChart";
+import VersoesAcessosChart from "./VersoesAcessosChart";
 
-function DetalhesDatasetView({ id }) {
+function DetalhesDatasetView({ id, nome }) {
     const [registros, setRegistros] = useState([]);
+    const [views, setViews] = useState([]);
+    const [downloads, setDownloads] = useState([]);
+
     const [carregando, setCarregando] = useState(true);
     const [erro, setErro] = useState(null);
     
     const navigate = useNavigate();
 
     useEffect(() => {
-        fetch(`http://localhost:8080/backend/registry/dataset?id_dataset=${id}`, {
+        fetch(`http://localhost:8080/backend/registry/dataset/stats?id_dataset=${id}`, {
             method: "GET",
             credentials: "include"
         })
@@ -24,8 +28,10 @@ function DetalhesDatasetView({ id }) {
                 return res.json();
             })
             .then(async (data) => {
-                if (data && data.length > 0) {
-                    setRegistros(data);
+                if (data) {
+                    setRegistros(data.historico);
+                    setViews([...data.topViews].reverse());
+                    setDownloads([...data.topDownloads].reverse());
                 }
                 setCarregando(false);
             })
@@ -41,6 +47,45 @@ function DetalhesDatasetView({ id }) {
 
     return (
         <div className="text-light" style={{ width: "100%" }}>
+            <h3>Estatísticas de {nome}</h3>
+            <Box
+                sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    gap: 3,
+                }}
+                >
+                <Box sx={{
+                    width: "50%",
+                    border: "1px solid #444",
+                    borderRadius: 3,
+                    p: 3,
+                    mt: 3,
+                    backgroundColor: "#1f1f1f",
+                }}
+                >
+                    <h5 style={{ color: "white", marginBottom: "1rem" }}>
+                        Top visualizações
+                    </h5>
+                    <VersoesAcessosChart dadosBanco={views} tipo="views" />
+                </Box>
+
+                <Box sx={{
+                    width: "50%",
+                    border: "1px solid #444",
+                    borderRadius: 3,
+                    p: 3,
+                    mt: 3,
+                    backgroundColor: "#1f1f1f",
+                }}
+                >
+                    <h5 style={{ color: "white", marginBottom: "1rem" }}>
+                        Top downloads
+                    </h5>
+                    <VersoesAcessosChart dadosBanco={downloads} tipo="downloads" />
+                </Box>
+            </Box>
+
             <Box sx={{
                 border: "1px solid #444",
                 borderRadius: 3,

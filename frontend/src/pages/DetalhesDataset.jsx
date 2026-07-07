@@ -86,7 +86,6 @@ function DetalhesDataset() {
             <div className="flex-grow-1 p-5 overflow-auto" style={{ background: "#1a1a1a" }}>
             {aba === "detalhes" && (
                 <div className="d-flex flex-column gap-4">
-                    {/* 1. SEUS CARDS GERAIS DO DATASET */}
                     <div className="row">
                         <div className="col-md-4">
                             <div className="card bg-dark border-secondary shadow-sm text-center p-3 h-100">
@@ -164,8 +163,8 @@ function DetalhesDataset() {
                 {aba === "historico" && (
                     <HistoricoLinhagem id={id} />
                 )}
-
             </div>
+
         </div>
     );
 }

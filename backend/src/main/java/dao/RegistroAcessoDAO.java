@@ -6,6 +6,7 @@ package dao;
 
 import java.sql.SQLException;
 import java.util.List;
+
 import java.sql.Date;
 
 import model.DadosAcesso;
@@ -15,6 +16,8 @@ public interface RegistroAcessoDAO extends DAO<RegistroAcesso> {
 
     void registrar(int idDataset, int numVersao, String username, String tipoAcao) throws SQLException;
 
-    List<DadosAcesso> allVersionAcessesBetween(Date startDate, Date endDate, int datasetId, int num_versao) throws SQLException;
-    List<DadosAcesso> allDatasetAcessesBetween(Date startDate, Date endDate, int datasetId) throws SQLException;
+    public List<DadosAcesso> allVersionAcessesBetween(Date startDate, Date endDate, int datasetId, int num_versao) throws SQLException;
+    public List<DadosAcesso> allDatasetAcessesBetween(Date startDate, Date endDate, int datasetId) throws SQLException;
+    public List<DadosAcesso> topVersionViews(Date startDate, Date endDate, int datasetId) throws SQLException;
+    public List<DadosAcesso> topVersionDownloads(Date startDate, Date endDate, int datasetId) throws SQLException;
 }

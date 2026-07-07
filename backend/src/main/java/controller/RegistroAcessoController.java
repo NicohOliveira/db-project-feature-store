@@ -20,6 +20,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
@@ -41,6 +42,9 @@ import model.DadosAcesso;
         urlPatterns = {
             "/registry",
             "/registry/dataset",
+            "/registry/dataset/top/views",
+            "/registry/dataset/top/downloads",
+            "/registry/dataset/stats", // Engloba os 3 acima (para usar um só fetch)
             "/registry/versao",
             "/registry/create",
             "/registry/read",
@@ -66,6 +70,61 @@ public class RegistroAcessoController extends HttpServlet {
 
             case "/registry/read": {
                 // placeholder
+                break;
+            }
+
+            case "/registry/dataset/stats": {
+                response.setContentType("application/json");
+                response.setCharacterEncoding("UTF-8");
+
+                try {
+                    String idDatasetStr = request.getParameter("id_dataset");
+
+                    if (idDatasetStr == null || idDatasetStr.isEmpty()) {
+                        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                        response.getWriter().write("{\"erro\": \"ID do dataset é obrigatório.\"}");
+                        return;
+                    }
+
+                    int idDataset = Integer.parseInt(idDatasetStr);
+
+                    long now = System.currentTimeMillis();
+
+                    Date startDate = new Date(now - aYear);
+                    Date endDate = new Date(now);
+
+                    try (DAOFactory daoFactory = DAOFactory.getInstance()) {
+                        dao = daoFactory.getRegistroAcessoDAO();
+
+                        List<DadosAcesso> historico = dao.allDatasetAcessesBetween(startDate, endDate, idDataset);
+                        List<DadosAcesso> topViews = dao.topVersionViews(startDate, endDate, idDataset);
+                        List<DadosAcesso> topDownloads = dao.topVersionDownloads(startDate, endDate, idDataset);
+
+                        Map<String, Object> resposta = Map.of(
+                            "historico", historico,
+
+                            "topViews", topViews.stream().map(d -> Map.of(
+                                "versao", d.getVersao(),
+                                "visualizacoes", d.getVisualizacoes()
+                            )).toList(),
+
+                            "topDownloads", topDownloads.stream().map(d -> Map.of(
+                                "versao", d.getVersao(),
+                                "downloads", d.getDownloads()
+                            )).toList()
+                        );
+
+                        Gson gson = new Gson();
+                        response.getWriter().write(gson.toJson(resposta));
+                    }
+
+                } catch (Exception e) {
+                    response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                    response.getWriter().write(
+                        "{\"status\":\"erro\", \"mensagem\":\"" + e.getMessage() + "\"}"
+                    );
+                }
+
                 break;
             }
 
@@ -142,6 +201,88 @@ public class RegistroAcessoController extends HttpServlet {
                 }
                 break;
             }
+
+            case "/registry/dataset/top/views": {
+                response.setContentType("application/json");
+                response.setCharacterEncoding("UTF-8");
+
+                try {
+                    String idDatasetStr = request.getParameter("id_dataset");
+
+                    if (idDatasetStr == null || idDatasetStr.isEmpty()) {
+                        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                        response.getWriter().write("{\"erro\": \"ID do dataset é obrigatório.\"}");
+                        return;
+                    }
+
+                    int idDataset = Integer.parseInt(idDatasetStr);
+
+                    long now = System.currentTimeMillis();
+
+                    Date startDate = new Date(now - aYear);
+                    Date endDate = new Date(now);
+
+                    try (DAOFactory daoFactory = DAOFactory.getInstance()) {
+                        dao = daoFactory.getRegistroAcessoDAO();
+                        List<DadosAcesso> historico = dao.topVersionViews(startDate, endDate, idDataset);
+
+                        List<Map<String, Integer>> ranking = historico.stream().map(d -> Map.of(
+                            "versao", d.getVersao(),
+                            "visualizacoes", d.getDownloads()
+                        )).toList();
+
+                        Gson gson = new Gson();
+                        String json = gson.toJson(ranking);
+
+                        response.getWriter().write(json);
+                    }
+                } catch (Exception e) {
+                    response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                    response.getWriter().write("{\"status\": \"erro\", \"mensagem\": \"" + e.getMessage() + "\"}");
+                }
+                break;
+            }
+            
+            case "/registry/dataset/top/downloads": {
+                response.setContentType("application/json");
+                response.setCharacterEncoding("UTF-8");
+
+                try {
+                    String idDatasetStr = request.getParameter("id_dataset");
+
+                    if (idDatasetStr == null || idDatasetStr.isEmpty()) {
+                        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                        response.getWriter().write("{\"erro\": \"ID do dataset é obrigatório.\"}");
+                        return;
+                    }
+
+                    int idDataset = Integer.parseInt(idDatasetStr);
+
+                    long now = System.currentTimeMillis();
+
+                    Date startDate = new Date(now - aYear);
+                    Date endDate = new Date(now);
+
+                    try (DAOFactory daoFactory = DAOFactory.getInstance()) {
+                        dao = daoFactory.getRegistroAcessoDAO();
+                        List<DadosAcesso> historico = dao.topVersionDownloads(startDate, endDate, idDataset);
+
+                        List<Map<String, Integer>> ranking = historico.stream().map(d -> Map.of(
+                            "versao", d.getVersao(),
+                            "downloads", d.getDownloads()
+                        )).toList();
+
+                        Gson gson = new Gson();
+                        String json = gson.toJson(ranking);
+
+                        response.getWriter().write(json);
+                    }
+                } catch (Exception e) {
+                    response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                    response.getWriter().write("{\"status\": \"erro\", \"mensagem\": \"" + e.getMessage() + "\"}");
+                }
+                break;
+            }
         }
     }
 
@@ -164,6 +305,12 @@ public class RegistroAcessoController extends HttpServlet {
                 response.setHeader("Access-Control-Allow-Credentials", "true");
 
                 try {
+                    if (session == null || session.getAttribute("usuario") == null) {
+                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                        response.getWriter().write("{\"status\": \"erro\", \"mensagem\": \"Usuário não autenticado.\"}");
+                        return;
+                    }
+
                     int idDataset = Integer.parseInt(request.getParameter("id_dataset"));
                     int numVersao = Integer.parseInt(request.getParameter("num_versao"));
                     String tipoAcao = request.getParameter("tipo_acao");
