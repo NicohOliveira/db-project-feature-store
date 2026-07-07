@@ -45,7 +45,19 @@ function DetalhesVersaoView({ id, numVersao }) {
 
     return (
         <div className="text-light" style={{ width: "100%" }}>
-            <EvolucaoAcessosChart dadosBanco={registros} />
+            <Box sx={{
+                border: "1px solid #444",
+                borderRadius: 3,
+                p: 3,
+                mt: 3,
+                backgroundColor: "#18181b33",
+            }}
+            >
+                <h5 style={{ color: "white", marginBottom: "1rem" }}>
+                    Histórico de visualizações e downloads desta versão.
+                </h5>
+                <EvolucaoAcessosChart dadosBanco={registros} />
+            </Box>
         </div>
     );
 }

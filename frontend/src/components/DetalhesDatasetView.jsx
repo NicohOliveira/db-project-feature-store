@@ -41,7 +41,19 @@ function DetalhesDatasetView({ id }) {
 
     return (
         <div className="text-light" style={{ width: "100%" }}>
-            <EvolucaoAcessosChart dadosBanco={registros} />
+            <Box sx={{
+                border: "1px solid #444",
+                borderRadius: 3,
+                p: 3,
+                mt: 3,
+                backgroundColor: "#1f1f1f",
+            }}
+            >
+                <h5 style={{ color: "white", marginBottom: "1rem" }}>
+                    Histórico de visualizações e downloads de todas as versões deste Dataset
+                </h5>
+                <EvolucaoAcessosChart dadosBanco={registros} />
+            </Box>
         </div>
     );
 }
