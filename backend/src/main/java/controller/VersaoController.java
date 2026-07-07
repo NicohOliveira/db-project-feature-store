@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import dao.DAOFactory;
 import dao.UserDAO;
 import dao.VersaoDAO;
+import dao.RegistroAcessoDAO;
 import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -117,6 +118,18 @@ public class VersaoController extends HttpServlet {
 
                         Gson gson = new Gson();
                         response.getWriter().write(gson.toJson(versao));
+                        try {
+                            RegistroAcessoDAO acessoDAO = daoFactory.getRegistroAcessoDAO();
+                            User usuarioLogado = (User) session.getAttribute("usuario");
+                            String usernameLogado = (usuarioLogado != null) ? usuarioLogado.getUsername() : null;
+
+                            int idData = Integer.parseInt(idDatasetStr);
+                            int numVer = Integer.parseInt(numVersaoStr);
+
+                            acessoDAO.registrar(idData, numVer, usernameLogado, "VISUALIZACAO");
+                        } catch (Exception ex) {
+                            Logger.getLogger(VersaoController.class.getName()).log(Level.WARNING, "Falha silenciosa ao registrar visualização", ex);
+                        }
                     }
                 } catch (Exception e) {
                     response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
@@ -167,7 +180,7 @@ public class VersaoController extends HttpServlet {
 
                     try (DAOFactory daoFactory = DAOFactory.getInstance()) {
                         dao = daoFactory.getVersaoDAO();
-                    
+
                         String idComposto = idDatasetStr + "-" + numVersaoStr;
                         Versao versao = dao.read(idComposto);
 
@@ -197,6 +210,19 @@ public class VersaoController extends HttpServlet {
                                 outStream.write(buffer, 0, bytesRead);
                             }
                         }
+                        try {
+                            RegistroAcessoDAO acessoDAO = daoFactory.getRegistroAcessoDAO();
+                            User usuarioLogado = (User) session.getAttribute("usuario");
+                            String usernameLogado = (usuarioLogado != null) ? usuarioLogado.getUsername() : null;
+
+                            int idData = Integer.parseInt(idDatasetStr);
+                            int numVer = Integer.parseInt(numVersaoStr);
+
+                            acessoDAO.registrar(idData, numVer, usernameLogado, "DOWNLOAD");
+                        } catch (Exception ex) {
+                            Logger.getLogger(VersaoController.class.getName()).log(Level.WARNING, "Falha silenciosa ao registrar download", ex);
+                        }
+
                     }
                 } catch (Exception e) {
                     Logger.getLogger(VersaoController.class.getName()).log(Level.SEVERE, "Erro no Download", e);
@@ -204,6 +230,7 @@ public class VersaoController extends HttpServlet {
                 }
                 break;
             }
+
         }
     }
 
@@ -240,7 +267,7 @@ public class VersaoController extends HttpServlet {
                     System.out.println(">>> JSON RECEBIDO NO JAVA: " + featuresJson);
                     List<Feature> listaFeatures = new ArrayList<>();
                     if (featuresJson != null && !featuresJson.trim().isEmpty()) {
-                        Type listType = new TypeToken<List<Feature>>(){}.getType(); // Usando List em vez de ArrayList
+                        Type listType = new TypeToken<List<Feature>>(){}.getType();
                         listaFeatures = new Gson().fromJson(featuresJson, listType);
                         System.out.println(">>> [CONTROLLER] GSON CONVERTEU. QTD NA LISTA: " + listaFeatures.size());
                     }

@@ -78,9 +78,19 @@ function HistoricoLinhagem({ id }) {
             });
     }, [id]);
 
+
+
     const baixarArquivo = (numVersao) => {
         const urlDownload = `http://localhost:8080/backend/versao/download?id_dataset=${id}&num_versao=${numVersao}`;
         window.open(urlDownload, "_blank");
+    };
+
+    const registrarVisualizacao = (numVersaoClicada) => {
+        fetch(`http://localhost:8080/backend/versao/read?id_dataset=${id}&num_versao=${numVersaoClicada}`, {
+            method: "GET",
+            credentials: "include"
+        })
+            .catch(err => console.error("Falha silenciosa no tracking do front:", err));
     };
 
     const toggleExpandir = (numVersao) => {
@@ -105,7 +115,7 @@ function HistoricoLinhagem({ id }) {
             const idComposto = `${id}-${versaoParaDeletar.numVersao}`;
 
             const response = await fetch(`http://localhost:8080/backend/versao/delete?id=${idComposto}&senha=${password}`, {
-                method: "GET", // ou POST, ajuste conforme seu Controller
+                method: "GET",
                 credentials: "include"
             });
 
@@ -157,7 +167,12 @@ function HistoricoLinhagem({ id }) {
                                 <div
                                     className="d-flex justify-content-between align-items-center p-3"
                                     style={{ cursor: "pointer", backgroundColor: "#212529" }}
-                                    onClick={() => toggleExpandir(versao.numVersao)}
+                                    onClick={() => {
+                                        if (versaoExpandida !== versao.numVersao) {
+                                            registrarVisualizacao(versao.numVersao);
+                                        }
+                                        toggleExpandir(versao.numVersao);
+                                    }}
                                 >
                                     <div>
                                         <div className="d-flex align-items-center gap-2 mb-1">
@@ -217,7 +232,6 @@ function HistoricoLinhagem({ id }) {
                                                                     </tr>
                                                                     </thead>
                                                                     <tbody>
-                                                                    {/* MÁGICA AQUI: Mostra todas se estiver expandido, senão mostra só as 3 primeiras */}
                                                                     {(featuresExpandidas[versao.numVersao]
                                                                             ? versao.features
                                                                             : versao.features.slice(0, 3)
@@ -232,14 +246,14 @@ function HistoricoLinhagem({ id }) {
                                                                 </table>
                                                             </div>
 
-                                                            {/* Botão de Ver Mais, só aparece se tiver mais de 3 features */}
+
                                                             {versao.features.length > 3 && (
                                                                 <div className="text-center mt-2">
                                                                     <button
                                                                         className="btn btn-sm text-info text-decoration-none fw-bold"
                                                                         style={{ background: "transparent", border: "none" }}
                                                                         onClick={(e) => {
-                                                                            e.stopPropagation(); // Evita que feche o acordeão da versão
+                                                                            e.stopPropagation();
                                                                             toggleFeatures(versao.numVersao);
                                                                         }}
                                                                     >
@@ -281,7 +295,7 @@ function HistoricoLinhagem({ id }) {
                                                     Criar versão a partir desta
                                                 </button>
                                                 <button
-                                                    className="btn btn-danger fw-bold px-4 shadow" // Botão vermelho
+                                                    className="btn btn-danger fw-bold px-4 shadow"
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         setVersaoParaDeletar(versao);

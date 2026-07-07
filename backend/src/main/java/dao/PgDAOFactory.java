@@ -33,4 +33,14 @@ public class PgDAOFactory extends DAOFactory {
     public FonteDAO getFonteDAO() {
         return new PgFonteDAO(this.connection);
     }
+
+    @Override
+    public RelatorioDAO getRelatorioDAO() {
+        return new PgRelatorioDAO(this.connection);
+    }
+
+    @Override
+    public RegistroAcessoDAO getRegistroAcessoDAO() {
+        return new PgRegistroAcessoDAO(this.connection);
+    }
 }

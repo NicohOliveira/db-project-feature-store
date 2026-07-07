@@ -45,6 +45,9 @@ public class DatasetController extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         DAO<Dataset> dao;
         Dataset dataset;
+        response.setHeader("Access-Control-Allow-Origin", "http://localhost:5173");
+        response.setHeader("Access-Control-Allow-Credentials", "true");
+        response.setCharacterEncoding("UTF-8");
 
         switch (request.getServletPath()) {
             case "/dataset": {
