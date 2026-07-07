@@ -46,56 +46,47 @@ function DetalhesDatasetView({ id, nome }) {
     if (erro) return <div className="container mt-5 alert alert-danger bg-dark text-danger border-danger">{erro}</div>;
 
     return (
-        <div className="text-light" style={{ width: "100%" }}>
-            <h3>Estatísticas de {nome}</h3>
-            <Box
-                sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    gap: 3,
-                }}
-                >
-                <Box sx={{
-                    width: "50%",
-                    border: "1px solid #444",
-                    borderRadius: 3,
-                    p: 3,
-                    mt: 3,
-                    backgroundColor: "#1f1f1f",
-                }}
-                >
-                    <h5 style={{ color: "white", marginBottom: "1rem" }}>
-                        Top visualizações
-                    </h5>
-                    <VersoesAcessosChart dadosBanco={views} tipo="views" />
-                </Box>
+        <div className="card bg-dark border-secondary mb-5 shadow-sm">
+            <div className="card-body">
+                <h5 className="text-light mb-3">Ranking de visualizações e downloads</h5>
+                    <Box
+                    sx={{
+                        display: "flex",
+                        justifyContent: "space-evenly",
+                        gap: 3,
+                    }}
+                    >
 
-                <Box sx={{
-                    width: "50%",
-                    border: "1px solid #444",
-                    borderRadius: 3,
-                    p: 3,
-                    mt: 3,
-                    backgroundColor: "#1f1f1f",
-                }}
-                >
-                    <h5 style={{ color: "white", marginBottom: "1rem" }}>
-                        Top downloads
-                    </h5>
-                    <VersoesAcessosChart dadosBanco={downloads} tipo="downloads" />
+                    <Box sx={{
+                        width: "40%",
+                        mt: 3,
+                        mb: -3,
+                    }}
+                    >
+                        <VersoesAcessosChart dadosBanco={views} tipoData="versao" tipo="views" />
+                    </Box>
+
+                    <Box sx={{
+                        width: "40%",
+                        p: 0,
+                        mt: 3,
+                        mb: -3,
+                    }}
+                    >
+                        <VersoesAcessosChart dadosBanco={downloads} tipoData="versao" tipo="downloads" />
+                    </Box>
                 </Box>
-            </Box>
+            </div>
 
             <Box sx={{
                 border: "1px solid #444",
-                borderRadius: 3,
-                p: 3,
-                mt: 3,
-                backgroundColor: "#1f1f1f",
+                borderRadius: 0,
+                p: 5,
+                backgroundColor: "#1f1f1f00",
             }}
             >
                 <h5 style={{ color: "white", marginBottom: "1rem" }}>
-                    Histórico de visualizações e downloads de todas as versões deste Dataset
+                    Histórico de visualizações e downloads de todas as versões
                 </h5>
                 <EvolucaoAcessosChart dadosBanco={registros} />
             </Box>

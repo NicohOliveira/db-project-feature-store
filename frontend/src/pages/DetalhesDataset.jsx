@@ -63,7 +63,7 @@ function DetalhesDataset() {
                             style={aba !== "detalhes" ? { color: "#aaa" } : {}}
                             onClick={() => setAba("detalhes")}
                         >
-                            <span style={{ width: "200px", textAlign: "left" }}>📊 Painel Analítico</span>
+                            <span style={{ width: "200px", textAlign: "center" }}>Estatísticas</span>
                         </button>
                     </li>
                     <li className="nav-item mb-2">
@@ -107,18 +107,8 @@ function DetalhesDataset() {
                         </div>
                     </div>
 
-                    {/* 2. O GRÁFICO DE LINHAS DO CAIO */}
-                    <div className="card bg-dark border-secondary shadow-sm">
-                        <div className="card-header border-secondary bg-transparent pt-3 pb-2">
-                            <h5 className="text-light mb-0">📈 Histórico de Acessos no Tempo</h5>
-                        </div>
-                        {/* Fundo claro no gráfico para os eixos ficarem visíveis */}
-                        <div className="card-body bg-light rounded-bottom p-2">
-                            <DetalhesDatasetView id={id} />
-                        </div>
-                    </div>
+                    <DetalhesDatasetView id={id} />
 
-                    {/* 3. SUA TABELA DE CONTRIBUIDORES */}
                     <div className="card bg-dark border-secondary shadow-sm d-flex flex-column">
                         <div className="card-header border-secondary bg-transparent pt-3 pb-2">
                             <h5 className="text-light mb-0">🏆 Top Contribuidores Deste Dataset</h5>

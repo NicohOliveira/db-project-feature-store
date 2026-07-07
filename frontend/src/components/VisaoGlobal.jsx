@@ -1,5 +1,8 @@
 import React from "react";
 
+import VersoesAcessosChart from "./VersoesAcessosChart";
+import Box from '@mui/material/Box';
+
 function VisaoGlobal({ estatisticas, pageContrib, setPageContrib, datasets }) {
     if (!estatisticas) {
         return <p style={{ color: "#888" }}>Carregando estatísticas da plataforma...</p>;
@@ -8,6 +11,9 @@ function VisaoGlobal({ estatisticas, pageContrib, setPageContrib, datasets }) {
     const totalAcoes = estatisticas.totalVisualizacoes + estatisticas.totalDownloads;
     const porcVis = totalAcoes > 0 ? Math.round((estatisticas.totalVisualizacoes / totalAcoes) * 100) : 0;
     const porcDown = totalAcoes > 0 ? Math.round((estatisticas.totalDownloads / totalAcoes) * 100) : 0;
+
+    const viewsDatasets = [...estatisticas.viewsDatasets].reverse();
+    const downloadsDatasets = [...estatisticas.downloadsDatasets].reverse();
 
     return (
         <div>
@@ -68,8 +74,39 @@ function VisaoGlobal({ estatisticas, pageContrib, setPageContrib, datasets }) {
                 </div>
             </div>
 
-            {/* aqui da pra por o grafico global */}
+            <div className="card bg-dark border-secondary mb-5 shadow-sm">
+                <div className="card-body">
+                    <h5 className="text-light mb-3">Datasets com maior número de interações</h5>
+                    {totalAcoes === 0 ? (
+                        <p className="text-secondary mb-0">Nenhum dataset registrado.</p>
+                    ) : (
+                        <Box
+                sx={{
+                    display: "flex",
+                    justifyContent: "space-evenly",
+                    gap: 3,
+                }}
+                >
 
+                <Box sx={{
+                    width: "45%",
+                    mt: 3,
+                }}
+                >
+                    <VersoesAcessosChart dadosBanco={viewsDatasets} tipoData="dataset" tipo="views" />
+                </Box>
+
+                <Box sx={{
+                    width: "45%",
+                    mt: 3,
+                }}
+                >
+                    <VersoesAcessosChart dadosBanco={downloadsDatasets} tipoData="dataset" tipo="downloads" />
+                </Box>
+            </Box>
+                    )}
+                </div>
+            </div>
 
             <div className="row">
                 <div className="col-md-12 mb-4">

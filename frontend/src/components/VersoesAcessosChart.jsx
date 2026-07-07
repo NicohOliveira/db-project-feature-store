@@ -2,16 +2,19 @@ import * as React from "react";
 import Box from "@mui/material/Box";
 import { BarChart } from "@mui/x-charts/BarChart";
 
-export default function VersoesAcessosChart({ dadosBanco, tipo }) {
+export default function VersoesAcessosChart({ dadosBanco, tipoData, tipo }) {
 
+  const isDataset = tipoData === "dataset";
   const isViews = tipo === "views";
 
   const chartData = {
     xAxis: [
       {
         scaleType: "band",
-        data: dadosBanco.map((item) => item.versao),
-        label: "Versão",
+        data: dadosBanco.map((item) =>
+          isDataset ? item.dataset : item.versao
+        ),
+        label: tipoData,
       },
     ],
     series: [
