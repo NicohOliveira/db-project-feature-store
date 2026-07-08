@@ -45,6 +45,9 @@ export default function MaturidadeChart({ dadosBanco }) {
                     "& .MuiChartsLegend-root text": {
                         fill: "#ffffffc5 !important",
                     },
+                    "& .MuiChartsLabel-root": {
+                        color: "#ffffffc5 !important",
+                    },
                 }}
             />
         </Box>

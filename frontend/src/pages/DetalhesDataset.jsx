@@ -3,6 +3,8 @@ import { useState, useEffect } from "react";
 import HistoricoLinhagem from "../components/HistoricoLinhagem";
 import DetalhesDatasetView from "../components/DetalhesDatasetView";
 
+import TotalCard from "../components/TotalCard";
+
 function DetalhesDataset() {
     const { id } = useParams();
     const [dataset, setDataset] = useState(null);
@@ -85,26 +87,11 @@ function DetalhesDataset() {
 
             <div className="flex-grow-1 p-5 overflow-auto" style={{ background: "#1a1a1a" }}>
             {aba === "detalhes" && (
-                <div className="d-flex flex-column gap-4">
-                    <div className="row">
-                        <div className="col-md-4">
-                            <div className="card bg-dark border-secondary shadow-sm text-center p-3 h-100">
-                                <h6 className="text-secondary text-uppercase fw-bold" style={{ fontSize: "12px" }}>Total de Versões</h6>
-                                <h2 className="text-light mb-0">{estatisticas?.totalVersoes || 0}</h2>
-                            </div>
-                        </div>
-                        <div className="col-md-4">
-                            <div className="card bg-dark border-secondary shadow-sm text-center p-3 h-100">
-                                <h6 className="text-secondary text-uppercase fw-bold" style={{ fontSize: "12px" }}>Visualizações Totais</h6>
-                                <h2 className="text-info mb-0">{estatisticas?.visualizacoes || 0}</h2>
-                            </div>
-                        </div>
-                        <div className="col-md-4">
-                            <div className="card bg-dark border-secondary shadow-sm text-center p-3 h-100">
-                                <h6 className="text-secondary text-uppercase fw-bold" style={{ fontSize: "12px" }}>Downloads Totais</h6>
-                                <h2 className="text-success mb-0">{estatisticas?.downloads || 0}</h2>
-                            </div>
-                        </div>
+                <div className="gap-4">
+                    <div className="row justify-content-evenly mb-5">
+                        <TotalCard dadosBanco={estatisticas?.totalVersoes} texto="Versões" cor="text-light" />
+                        <TotalCard dadosBanco={estatisticas?.visualizacoes} texto="Visualizações" cor="text-info" />
+                        <TotalCard dadosBanco={estatisticas?.downloads} texto="Downloads" cor="text-success" />
                     </div>
 
                     <DetalhesDatasetView id={id} estatisticas={estatisticas} />

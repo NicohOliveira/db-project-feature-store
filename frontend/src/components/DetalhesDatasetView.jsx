@@ -93,8 +93,8 @@ function DetalhesDatasetView({ id, nome, estatisticas }) {
                 <EvolucaoAcessosChart dadosBanco={registros} />
             </Box>
 
-            <div className="card bg-dark border-secondary shadow-sm mt-2">
-                <div className="card-header border-secondary bg-transparent pt-3 pb-2">
+            <div className="card bg-dark border-secondary shadow-sm">
+                <div className="border-secondary bg-transparent pt-3 pb-2">
                     <h5 className="text-light mb-0">Níveis de Maturidade</h5>
                     <small className="text-secondary">Distribuição da qualidade das versões deste dataset.</small>
                 </div>

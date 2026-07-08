@@ -4,6 +4,8 @@ import VersoesAcessosChart from "./VersoesAcessosChart";
 import Box from '@mui/material/Box';
 import MaturidadeChart from "./MaturidadeChart";
 
+import TotalCard from "./TotalCard";
+
 function VisaoGlobal({ estatisticas, pageContrib, setPageContrib, datasets }) {
     if (!estatisticas) {
         return <p style={{ color: "#888" }}>Carregando estatísticas da plataforma...</p>;
@@ -19,38 +21,10 @@ function VisaoGlobal({ estatisticas, pageContrib, setPageContrib, datasets }) {
     return (
         <div>
             <div className="row mb-5">
-                <div className="col-md-3">
-                    <div className="card bg-dark border-secondary shadow-sm">
-                        <div className="card-body text-center">
-                            <h6 className="text-secondary text-uppercase fw-bold" style={{ fontSize: "12px" }}>Total Datasets</h6>
-                            <h2 className="text-light mb-0">{estatisticas.totalDatasets || 0}</h2>
-                        </div>
-                    </div>
-                </div>
-                <div className="col-md-3">
-                    <div className="card bg-dark border-secondary shadow-sm">
-                        <div className="card-body text-center">
-                            <h6 className="text-secondary text-uppercase fw-bold" style={{ fontSize: "12px" }}>Total Versões</h6>
-                            <h2 className="text-light mb-0">{estatisticas.totalVersoes || 0}</h2>
-                        </div>
-                    </div>
-                </div>
-                <div className="col-md-3">
-                    <div className="card bg-dark border-secondary shadow-sm">
-                        <div className="card-body text-center">
-                            <h6 className="text-secondary text-uppercase fw-bold" style={{ fontSize: "12px" }}>Visualizações</h6>
-                            <h2 className="text-info mb-0">{estatisticas.totalVisualizacoes || 0}</h2>
-                        </div>
-                    </div>
-                </div>
-                <div className="col-md-3">
-                    <div className="card bg-dark border-secondary shadow-sm">
-                        <div className="card-body text-center">
-                            <h6 className="text-secondary text-uppercase fw-bold" style={{ fontSize: "12px" }}>Downloads</h6>
-                            <h2 className="text-success mb-0">{estatisticas.totalDownloads || 0}</h2>
-                        </div>
-                    </div>
-                </div>
+                <TotalCard dadosBanco={estatisticas.totalDatasets} texto="Total de datasets" cor="text-light" />
+                <TotalCard dadosBanco={estatisticas.totalVersoes} texto="Total de versões" cor="text-light" />
+                <TotalCard dadosBanco={estatisticas.totalVisualizacoes} texto="Visualizações" cor="text-info" />
+                <TotalCard dadosBanco={estatisticas.totalDownloads} texto="Downloads" cor="text-success" />
             </div>
             <div className="card bg-dark border-secondary mb-5 shadow-sm">
                 <div className="card-body">
@@ -61,14 +35,14 @@ function VisaoGlobal({ estatisticas, pageContrib, setPageContrib, datasets }) {
                         <>
                             <div className="progress" style={{ height: "30px", backgroundColor: "#333" }}>
                                 <div className="progress-bar bg-info fw-bold fs-6" role="progressbar" style={{ width: `${porcVis}%` }} title="Visualizações">
-                                    {porcVis}% Views
+                                    <p className="text-dark">{porcVis}% Views</p>
                                 </div>
                                 <div className="progress-bar bg-success fw-bold fs-6" role="progressbar" style={{ width: `${porcDown}%` }} title="Downloads">
-                                    {porcDown}% Downs
+                                    <p className="text-light">{porcDown}% Downloads</p>
                                 </div>
                             </div>
                             <small className="text-secondary d-block mt-2">
-                                Conversão média da plataforma: de todas as interações do sistema, <strong>{porcDown}%</strong> se transformam em downloads efetivos.
+                                De todas as interações do sistema, <strong>{porcDown}%</strong> se transformam em downloads efetivos.
                             </small>
                         </>
                     )}
@@ -82,29 +56,29 @@ function VisaoGlobal({ estatisticas, pageContrib, setPageContrib, datasets }) {
                         <p className="text-secondary mb-0">Nenhum dataset registrado.</p>
                     ) : (
                         <Box
-                sx={{
-                    display: "flex",
-                    justifyContent: "space-evenly",
-                    gap: 3,
-                }}
-                >
+                        sx={{
+                            display: "flex",
+                            justifyContent: "space-evenly",
+                            gap: 3,
+                        }}
+                        >
+                            <Box sx={{
+                                width: "45%",
+                                mt: 3,
+                            }}
+                            >
+                                <VersoesAcessosChart dadosBanco={viewsDatasets} tipoData="Dataset" tipo="views" />
+                            </Box>
 
-                <Box sx={{
-                    width: "45%",
-                    mt: 3,
-                }}
-                >
-                    <VersoesAcessosChart dadosBanco={viewsDatasets} tipoData="dataset" tipo="views" />
-                </Box>
 
-                <Box sx={{
-                    width: "45%",
-                    mt: 3,
-                }}
-                >
-                    <VersoesAcessosChart dadosBanco={downloadsDatasets} tipoData="dataset" tipo="downloads" />
-                </Box>
-            </Box>
+                            <Box sx={{
+                                width: "45%",
+                                mt: 3,
+                            }}
+                            >
+                                <VersoesAcessosChart dadosBanco={downloadsDatasets} tipoData="Dataset" tipo="downloads" />
+                            </Box>
+                        </Box>
                     )}
                 </div>
             </div>

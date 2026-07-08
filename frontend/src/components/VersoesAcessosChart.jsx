@@ -4,7 +4,7 @@ import { BarChart } from "@mui/x-charts/BarChart";
 
 export default function VersoesAcessosChart({ dadosBanco, tipoData, tipo }) {
 
-  const isDataset = tipoData === "dataset";
+  const isDataset = tipoData === "Dataset";
   const isViews = tipo === "views";
 
   const chartData = {

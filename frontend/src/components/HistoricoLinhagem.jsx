@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
+import { Box } from "@mui/material";
+
+import * as bootstrap from "bootstrap";
+
 function HistoricoLinhagem({ id }) {
     const usuarioLogado = localStorage.getItem("username");
 
@@ -10,8 +14,6 @@ function HistoricoLinhagem({ id }) {
     const [versoes, setVersoes] = useState([]);
     const [carregando, setCarregando] = useState(true);
     const [erro, setErro] = useState(null);
-    const [versaoExpandida, setVersaoExpandida] = useState(null);
-    const [featuresExpandidas, setFeaturesExpandidas] = useState({});
 
     const [filtroTexto, setFiltroTexto] = useState("");
     const [filtroMaturidade, setFiltroMaturidade] = useState("");
@@ -20,29 +22,15 @@ function HistoricoLinhagem({ id }) {
     const [filtroDataFim, setFiltroDataFim] = useState("");
     const navigate = useNavigate();
 
-    const baixarArquivo = (numVersao) => {
-        const urlDownload = `http://localhost:8080/backend/versao/download?id_dataset=${id}&num_versao=${numVersao}`;
-        window.open(urlDownload, "_blank");
-    };
+    useEffect(() => {
+        const tooltipTriggerList = document.querySelectorAll(
+            '[data-bs-toggle="tooltip"]'
+        );
 
-    const registrarVisualizacao = (numVersaoClicada) => {
-        fetch(`http://localhost:8080/backend/versao/read?id_dataset=${id}&num_versao=${numVersaoClicada}`, {
-            method: "GET",
-            credentials: "include"
-        })
-            .catch(err => console.error("Falha silenciosa no tracking do front:", err));
-    };
-
-    const toggleFeatures = (numVersao) => {
-        setFeaturesExpandidas((prev) => ({
-            ...prev,
-            [numVersao]: !prev[numVersao]
-        }));
-    };
-
-    const toggleExpandir = (numVersao) => {
-        setVersaoExpandida(versaoExpandida === numVersao ? null : numVersao);
-    };
+        tooltipTriggerList.forEach((el) => {
+            bootstrap.Tooltip.getOrCreateInstance(el);
+        });
+    }, [versoes]);
 
     const renderMaturidade = (nivel) => {
         switch (nivel) {
@@ -152,7 +140,7 @@ function HistoricoLinhagem({ id }) {
                 <h3 className="fw-bold text-white mb-1">Histórico de Versões</h3>
 
                 <p className="text-secondary mb-4">Acompanhe as modificações do dataset em ordem cronológica.</p>
-                <div className="card bg-dark border-secondary mb-4 shadow-sm">
+                <div className="card bg-dark border-secondary mb-4">
                     <div className="card-body">
                         <h6 className="text-info mb-3"><i className="bi bi-funnel"></i> Filtros Avançados (SQL Dinâmico)</h6>
                         <div className="row g-2">
@@ -195,190 +183,84 @@ function HistoricoLinhagem({ id }) {
                         <i className="bi bi-search me-2"></i> Nenhuma versão corresponde aos filtros aplicados.
                     </div>
                 ) : (
-                    <div className="list-group shadow">
+                    <div className="list-group p-2">
                         {versoes.map((versao) => {
-                            const isExpanded = versaoExpandida === versao.numVersao;
-
                             return (
                                 <div
                                     key={versao.numVersao}
-                                    className="list-group-item bg-dark text-light border-secondary p-0 mb-3 rounded"
+                                    className="list-group-item shadow bg-dark text-light border-secondary p-1 mb-3 rounded"
                                     style={{ transition: "all 0.3s ease" }}
                                 >
-                                    <div
-                                        className="d-flex justify-content-between align-items-center p-3"
-                                        style={{ cursor: "pointer", backgroundColor: "#212529" }}
-                                        onClick={() => {
-                                            if (versaoExpandida !== versao.numVersao) {
-                                                registrarVisualizacao(versao.numVersao);
-                                            }
-                                            toggleExpandir(versao.numVersao);
-                                        }}
+                                    <button
+                                        className="btn btn-dark"
+                                        onClick={() => handleVisualizar(versao.numVersao)}
+                                        style={{ width: "100%" }}
                                     >
-                                        <div>
-                                            <div className="d-flex align-items-center gap-2 mb-1">
-                                                <h5 className="mb-0 fw-bold text-white">Versão {versao.numVersao}</h5>
+                                        <Box
+                                            sx={{
+                                                display: "flex",
+                                                justifyContent: "space-between",
+                                                gap: 3,
+                                                p: 3,
+                                                mb: -1,
+                                                mt: -1
+                                            }}
+                                        >
 
-                                                {versao.numVersaoBase === 0 ? (
-                                                    <span className="badge bg-success">Versão Raíz</span>
-                                                ) : (
-                                                    <span className="badge bg-secondary border border-light">
-                                                        Derivada da V{versao.numVersaoBase}
+                                            <div style={{ width: "40%" }}>
+                                                <div className="align-items-center gap-2 mb-1">
+                                                    <span className="mb-0 fw-bold text-white" style={{ fontSize: "20px" }}>
+                                                        Versão {versao.numVersao}
                                                     </span>
-                                                )}
+                                                    <span className="ms-2">
+                                                        {renderMaturidade(versao.nivelMaturidade)}
+                                                    </span>
+                                                </div>
 
-                                                {renderMaturidade(versao.nivelMaturidade)}
+                                                <div className="text-secondary" style={{ fontSize: "14px" }}>
+                                                    Modificado por <span className="fw-bold text-light">{versao.usernameAutor}</span>
+                                                    <span className="ms-2">
+                                                    em {versao.dataRegistro || ""} às {versao.horaRegistro || ""}
+                                                    </span>
+                                                </div>
                                             </div>
-                                            <div className="text-secondary" style={{ fontSize: "14px" }}>
-                                                Modificado por <span className="fw-bold text-light">{versao.usernameAutor}</span>
-                                                <span className="ms-2">
-                                                   em {versao.dataRegistro || ""} às {versao.horaRegistro || ""}
-                                                </span>
-                                            </div>
-                                        </div>
 
-                                        <div className="d-flex gap-2" onClick={(e) => e.stopPropagation()}>
-                                            <button
-                                                type="button"
-                                                className="btn btn-sm btn-outline-light d-flex align-items-center gap-1"
-                                                title="Visualizar"
-                                                onClick={() => handleVisualizar(versao.numVersao)}
-                                            >
-                                                <i className="bi bi-eye"></i> Visualizar
-                                            </button>
-
-                                            {usuarioLogado === versao.usernameAutor && (
-                                                <button
-                                                    type="button"
-                                                    className="btn btn-sm btn-outline-danger d-flex align-items-center gap-1"
-                                                    title="Excluir"
-                                                    onClick={() => acionarExclusao(versao)}
+                                            <div className="d-flex flex-column" >
+                                                <button type="button" className="btn rounded"
+                                                    data-bs-toggle="tooltip" data-bs-placement="left"
+                                                    data-bs-custom-className="custom-tooltip"
+                                                    data-bs-title={versao.numVersaoBase === 0 ? (
+                                                            "Versão Raíz"
+                                                        ) : (
+                                                            `Derivada da versão ${versao.numVersaoBase}`
+                                                        )} 
+                                                    style={{  width: "100%" }}
                                                 >
-                                                    <i className="bi bi-trash"></i> Excluir
+
+                                                    <h5 style={{
+                                                            display: "inline-flex",
+                                                            alignItems: "center",
+                                                            justifyContent: "center",
+                                                            height: "100%",
+                                                            width: "33px",
+                                                            borderRadius: "50%",
+                                                            backgroundColor: "#8792a169",
+                                                            color: "white",
+                                                            fontWeight: "bold",
+                                                            fontSize: "20px",
+                                                            marginLeft: "6px",
+                                                            }}
+                                                        > 
+                                                            ?
+                                                    </h5>
+
                                                 </button>
-                                            )}
-
-                                            <div className="text-secondary fw-bold fs-4 ms-2">
-                                                {isExpanded ? "-" : "+"}
                                             </div>
-                                        </div>
-                                    </div>
 
-                                    {isExpanded && (
-                                        <div className="p-3 border-top border-secondary bg-dark">
-                                            <div className="row">
-                                                <div className="col-md-8">
-                                                    <div className="mb-3">
-                                                        <h6 className="text-uppercase text-secondary fw-bold" style={{ fontSize: "12px", letterSpacing: "1px" }}>
-                                                            Descrição da Modificação
-                                                        </h6>
-                                                        <p className="mb-0 text-white" style={{ whiteSpace: "pre-wrap" }}>
-                                                            {versao.descricaoModificacoes || "Sem descrição disponível."}
-                                                        </p>
-                                                    </div>
-
-                                                    <div>
-                                                        <h6 className="text-uppercase text-secondary fw-bold" style={{ fontSize: "12px", letterSpacing: "1px" }}>
-                                                            Dicionário de Features
-                                                        </h6>
-
-                                                        {versao.features && versao.features.length > 0 ? (
-                                                            <div className="mt-2">
-                                                                <div className="table-responsive">
-                                                                    <table className="table table-sm table-dark table-bordered border-secondary mb-0" style={{ fontSize: "14px" }}>
-                                                                        <thead className="table-active text-secondary">
-                                                                        <tr>
-                                                                            <th style={{ width: "30%" }}>Coluna</th>
-                                                                            <th style={{ width: "20%" }}>Tipo</th>
-                                                                            <th style={{ width: "50%" }}>Descrição</th>
-                                                                        </tr>
-                                                                        </thead>
-                                                                        <tbody>
-                                                                        {(featuresExpandidas[versao.numVersao]
-                                                                                ? versao.features
-                                                                                : versao.features.slice(0, 3)
-                                                                        ).map((feat, idx) => (
-                                                                            <tr key={idx}>
-                                                                                <td className="fw-bold">{feat.nomeColuna}</td>
-                                                                                <td>{feat.tipoDado || "-"}</td>
-                                                                                <td>{feat.descricao || "-"}</td>
-                                                                            </tr>
-                                                                        ))}
-                                                                        </tbody>
-                                                                    </table>
-                                                                </div>
-
-                                                                {versao.features.length > 3 && (
-                                                                    <div className="text-center mt-2">
-                                                                        <button
-                                                                            className="btn btn-sm text-info text-decoration-none fw-bold"
-                                                                            style={{ background: "transparent", border: "none" }}
-                                                                            onClick={(e) => {
-                                                                                e.stopPropagation();
-                                                                                toggleFeatures(versao.numVersao);
-                                                                            }}
-                                                                        >
-                                                                            {featuresExpandidas[versao.numVersao]
-                                                                                ? "⬆ Ocultar colunas"
-                                                                                : `⬇ Ver todas as ${versao.features.length} colunas`
-                                                                            }
-                                                                        </button>
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                        ) : (
-                                                            <p className="mb-0 text-secondary" style={{ fontStyle: "italic", fontSize: "14px" }}>
-                                                                Nenhum detalhe de feature informado.
-                                                            </p>
-                                                        )}
-                                                    </div>
-
-                                                    <br/>
-
-                                                    <div className="mt-2">
-                                                        <h6 className="text-secondary text-uppercase" style={{ fontSize: "11px" }}>Fontes</h6>
-                                                        {versao.fontes && versao.fontes.length > 0 ? (
-                                                            versao.fontes.map((f, idx) => (
-                                                                <span key={idx} className="badge bg-secondary me-2">
-                                                                    {f.fonte}
-                                                                </span>
-                                                            ))
-                                                        ) : (
-                                                            <p className="mb-0 text-secondary" style={{ fontStyle: "italic", fontSize: "14px" }}>
-                                                                Nenhuma fonte associada.
-                                                            </p>
-                                                        )}
-                                                    </div>
-                                                </div>
-
-                                                <div className="col-md-4 d-flex flex-column align-items-end justify-content-md-end mt-3 mt-md-0 gap-2">
-                                                    <button className="btn btn-primary fw-bold" onClick={() => navigate(`/versao/create/${id}/${versao.numVersao}`)}>
-                                                        Criar versão a partir desta
-                                                    </button>
-                                                    <button
-                                                        className="btn btn-danger fw-bold px-4 shadow"
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            setVersaoParaDeletar(versao);
-                                                            setShowDeleteModal(true);
-                                                        }}
-                                                    >
-                                                        Excluir
-                                                    </button>
-                                                    <button
-                                                        className="btn btn-success fw-bold px-4 shadow"
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            baixarArquivo(versao.numVersao);
-                                                        }}
-                                                    >
-                                                        Baixar CSV
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
+                                        </Box>
+                                    </button>
                                 </div>
+
                             );
                         })}
                     </div>
@@ -386,22 +268,22 @@ function HistoricoLinhagem({ id }) {
             </div>
 
             {showDeleteModal && (
-                <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", background: "rgba(0,0,0,0.8)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}>
-                    <div className="bg-dark p-4 rounded border border-danger text-light" style={{ width: "300px" }}>
-                        <h5>Confirmar exclusão</h5>
-                        <p>Versão {versaoParaDeletar.numVersao}. Digite sua senha:</p>
-                        <input
-                            type="password"
-                            className="form-control mb-3"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                        />
-                        <div className="d-flex gap-2">
-                            <button className="btn btn-danger w-100" onClick={confirmarExclusao}>Confirmar</button>
-                            <button className="btn btn-secondary w-100" onClick={() => setShowDeleteModal(false)}>Cancelar</button>
-                        </div>
-                    </div>
-                </div>
+               <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", background: "rgba(0,0,0,0.8)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}>
+                   <div className="bg-dark p-4 rounded border border-danger text-light" style={{ width: "300px" }}>
+                       <h5>Confirmar exclusão</h5>
+                       <p>Versão {versaoParaDeletar.numVersao}. Digite sua senha:</p>
+                       <input
+                           type="password"
+                           className="form-control mb-3"
+                           value={password}
+                           onChange={(e) => setPassword(e.target.value)}
+                       />
+                       <div className="d-flex gap-2">
+                           <button className="btn btn-danger w-100" onClick={confirmarExclusao}>Confirmar</button>
+                           <button className="btn btn-secondary w-100" onClick={() => setShowDeleteModal(false)}>Cancelar</button>
+                       </div>
+                   </div>
+               </div>
             )}
         </div>
     );
